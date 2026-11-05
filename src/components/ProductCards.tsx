@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { TreePine } from "lucide-react";
 import { formatBRL } from "@/lib/pricing";
+import type { SettingsMap } from "@/lib/settings";
 
 export type ProductCard = {
   slug: string;
@@ -14,17 +15,17 @@ export type ProductCard = {
   featured: boolean;
 };
 
-export default function ProductCards({ products }: { products: ProductCard[] }) {
+export default function ProductCards({ products, settings }: { products: ProductCard[]; settings: SettingsMap }) {
   return (
     <section id="produtos" className="section scroll-mt-20 bg-sage-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">Escolha o seu tamanho</p>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.products_eyebrow}</p>
           <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-            Qual árvore combina com a sua casa?
+            {settings.products_title}
           </h2>
           <p className="mt-3 text-white/90">
-            Todas já vêm montadas, com pisca-pisca e enfeites. Frete grátis para todo o Brasil.
+            {settings.products_subtitle}
           </p>
         </div>
 

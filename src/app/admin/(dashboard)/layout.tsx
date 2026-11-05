@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/online", label: "Online agora" },
   { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/produtos", label: "Produtos" },
+  { href: "/admin/editar-site", label: "Editar site" },
   { href: "/admin/prova-social", label: "Prova social" },
   { href: "/admin/avaliacoes", label: "Avaliações" },
   { href: "/admin/carrinhos-abandonados", label: "Carrinhos abandonados" },

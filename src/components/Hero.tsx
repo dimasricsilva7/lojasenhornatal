@@ -2,17 +2,21 @@ import { Star } from "lucide-react";
 import TrustBar from "@/components/TrustBar";
 import SizeSelector, { type SizeOption } from "@/components/SizeSelector";
 import ProductImage from "@/components/ProductImage";
+import type { SettingsMap } from "@/lib/settings";
 
 export default function Hero({
   sizes,
   defaultSlug,
   reviewStats,
+  settings,
 }: {
   sizes: SizeOption[];
   defaultSlug: string;
   reviewStats: { count: number; avg: number };
+  settings: SettingsMap;
 }) {
-  const heroImage = sizes.find((s) => s.slug === defaultSlug)?.image ?? sizes.find((s) => s.image)?.image ?? null;
+  const productImage = sizes.find((s) => s.slug === defaultSlug)?.image ?? sizes.find((s) => s.image)?.image ?? null;
+  const heroImage = settings.hero_image_url?.trim() || productImage;
 
   return (
     <section className="relative overflow-hidden bg-clay-600">
@@ -23,15 +27,14 @@ export default function Hero({
 
         <div className="animate-fadeUp">
           <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white ring-1 ring-white/25">
-            Árvore de Natal montada · Verde tradicional
+            {settings.hero_badge}
           </span>
 
           <h1 className="mt-4 text-[1.9rem] font-extrabold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-[2.6rem]">
-            Sua árvore de Natal pronta em minutos: já vem montada, com pisca-pisca e enfeites.
+            {settings.hero_title}
           </h1>
-          <p className="mt-4 max-w-lg text-base text-white/90 sm:text-lg">
-            Nada de passar a tarde abrindo galho, desembaraçando fio e correndo atrás de enfeite. Ela vem achatada na caixa,
-            já decorada: você encaixa o mastro, puxa a árvore para cima e liga na tomada.
+          <p className="mt-4 max-w-lg whitespace-pre-line text-base text-white/90 sm:text-lg">
+            {settings.hero_subtitle}
           </p>
 
           {reviewStats.count > 0 && (

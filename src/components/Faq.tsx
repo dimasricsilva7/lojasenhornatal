@@ -1,3 +1,5 @@
+import type { SettingsMap } from "@/lib/settings";
+
 function sizeAnswer(labels: string[]) {
   if (labels.length === 0) return "Meça o espaço antes de escolher.";
   if (labels.length === 1) return `A árvore tem ${labels[0]}. Meça o espaço antes de comprar.`;
@@ -20,13 +22,13 @@ const FAQ = (shippingDays: string, sizes: string[]) => [
   { q: "Como acompanho meu pedido?", a: "Assim que o pedido é enviado, você recebe o código de rastreio. Se tiver qualquer dúvida, fale com a gente pelo WhatsApp." },
 ];
 
-export default function Faq({ shippingDays = "3 a 5", sizes = [] }: { shippingDays?: string; sizes?: string[] }) {
+export default function Faq({ shippingDays = "3 a 5", sizes = [], settings }: { shippingDays?: string; sizes?: string[]; settings: SettingsMap }) {
   return (
     <section className="section bg-clay-600">
       <div className="container-app max-w-2xl">
         <div className="text-center">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">Dúvidas frequentes</p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Perguntas que todo mundo faz</h2>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.faq_eyebrow}</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{settings.faq_title}</h2>
         </div>
         <div className="mt-8 divide-y divide-white/15 rounded-xl2 bg-white/10 ring-1 ring-white/20">
           {FAQ(shippingDays, sizes).map(({ q, a }) => (

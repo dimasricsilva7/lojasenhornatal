@@ -95,13 +95,13 @@ export default async function HomePage() {
       <Snowfall />
       <ViewContentTracker productId={defaultProduct.id} productName={defaultProduct.name} priceCents={defaultProduct.priceCents} />
       <SiteHeader storeName={settings.store_name} shippingDays={settings.shipping_days} deadline={deadline} />
-      <Hero sizes={sizes} defaultSlug={defaultProduct.slug} reviewStats={reviewStats} />
-      <ProblemSection />
-      <HowItWorksSection mediaUrl={settings.demo_video_url || undefined} />
-      <WhatsInTheBox items={settings.box_items} imageUrl={settings.box_image_url || null} />
+      <Hero sizes={sizes} defaultSlug={defaultProduct.slug} reviewStats={reviewStats} settings={settings} />
+      <ProblemSection settings={settings} />
+      <HowItWorksSection mediaUrl={settings.demo_video_url || undefined} settings={settings} />
+      <WhatsInTheBox items={settings.box_items} imageUrl={settings.box_image_url || null} settings={settings} />
       <ProductGallery images={allImages} />
       <SocialProof items={proofs.map((p) => ({ id: p.id, mediaType: p.mediaType, url: p.url, caption: p.caption, name: p.name, city: p.city }))} />
-      <Comparison />
+      <Comparison settings={settings} />
       <Reviews reviews={reviews} stats={reviewStats} />
       <CustomerPhotos
         photos={reviewPhotos
@@ -116,7 +116,7 @@ export default async function HomePage() {
             productName: r.product?.name ?? null,
           }))}
       />
-      <Benefits />
+      <Benefits settings={settings} />
       <Specifications settings={settings} />
       <Guarantee
         text={settings.guarantee_text}
@@ -125,9 +125,9 @@ export default async function HomePage() {
         howTo={settings.guarantee_how_to || undefined}
       />
       <TrustSection />
-      <ProductCards products={productCards} />
-      <Faq shippingDays={settings.shipping_days || "3 a 5"} sizes={sizes.map((s) => s.label)} />
-      <FinalCta fromPriceCents={fromPriceCents} deadline={deadline} />
+      <ProductCards products={productCards} settings={settings} />
+      <Faq shippingDays={settings.shipping_days || "3 a 5"} sizes={sizes.map((s) => s.label)} settings={settings} />
+      <FinalCta fromPriceCents={fromPriceCents} deadline={deadline} settings={settings} />
       <SiteFooter settings={settings} />
       <StickyCta fromPriceCents={fromPriceCents} />
     </main>
