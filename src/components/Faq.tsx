@@ -24,7 +24,7 @@ const FAQ = (shippingDays: string, sizes: string[]) => [
 
 export default function Faq({ shippingDays = "3 a 5", sizes = [], settings }: { shippingDays?: string; sizes?: string[]; settings: SettingsMap }) {
   return (
-    <section className="section bg-clay-600">
+    <section data-sec="Perguntas" className="section bg-clay-600">
       <div className="container-app max-w-2xl">
         <div className="text-center">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.faq_eyebrow}</p>

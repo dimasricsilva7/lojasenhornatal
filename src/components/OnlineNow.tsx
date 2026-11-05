@@ -84,7 +84,7 @@ export default function OnlineNow({ detailed = false }: { detailed?: boolean }) 
         <div className="mt-5 grid gap-6 md:grid-cols-3">
           <Breakdown title="Origem" rows={data.sources} total={data.online} />
           <Breakdown title="Dispositivo" rows={data.devices} total={data.online} />
-          <Breakdown title="Página atual" rows={data.pages} total={data.online} />
+          <Breakdown title="Está em" rows={data.pages} total={data.online} />
         </div>
       )}
       {detailed && data && data.visitors.length > 0 && (
@@ -118,7 +118,7 @@ export default function OnlineNow({ detailed = false }: { detailed?: boolean }) 
           </table>
         </div>
       )}
-      <p className="mt-4 text-[11px] text-graphite-800/40">Conta abas abertas nos últimos 90 segundos. Robôs e o próprio admin são ignorados. Nenhum dado pessoal é exibido.</p>
+      <p className="mt-4 text-[11px] text-graphite-800/40">Conta abas abertas nos últimos 45 segundos e sai da lista assim que a pessoa fecha a aba. Robôs e o próprio admin são ignorados. Nenhum dado pessoal é exibido.</p>
     </section>
   );
 }

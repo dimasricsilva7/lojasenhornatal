@@ -19,7 +19,7 @@ export default function Hero({
   const heroImage = settings.hero_image_url?.trim() || productImage;
 
   return (
-    <section className="relative overflow-hidden bg-clay-600">
+    <section data-sec="Topo (Hero)" className="relative overflow-hidden bg-clay-600">
       <div className="container-app grid gap-8 py-6 sm:py-10 lg:grid-cols-2 lg:items-start lg:gap-12 lg:py-14">
         <div className={`${heroImage ? "block" : "hidden"} lg:block lg:sticky lg:top-24`}>
           <ProductImage src={heroImage} alt="Árvore de Natal montada, enfeitada e com pisca-pisca aceso" priority />

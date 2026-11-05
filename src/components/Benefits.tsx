@@ -17,7 +17,7 @@ export const DEFAULT_BOX_ITEMS = [
 export function WhatsInTheBox({ items, imageUrl, settings }: { items: string; imageUrl?: string | null; settings: SettingsMap }) {
   const list = (items || DEFAULT_BOX_ITEMS).split("\n").map((l) => l.trim()).filter(Boolean);
   return (
-    <section className="section bg-clay-600">
+    <section data-sec="O que vem na caixa" className="section bg-clay-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.box_eyebrow}</p>
@@ -53,7 +53,7 @@ export function WhatsInTheBox({ items, imageUrl, settings }: { items: string; im
 export function Comparison({ settings }: { settings: SettingsMap }) {
   const rows = settingRows(settings.comparison_rows);
   return (
-    <section className="section bg-white">
+    <section data-sec="Comparação" className="section bg-white">
       <div className="container-app max-w-3xl">
         <div className="mx-auto max-w-xl text-center">
           <p className="eyebrow mb-4">{settings.comparison_eyebrow}</p>
@@ -89,7 +89,7 @@ export function Comparison({ settings }: { settings: SettingsMap }) {
 export default function Benefits({ settings }: { settings: SettingsMap }) {
   const forWhom = settingLines(settings.forwhom_items);
   return (
-    <section className="section bg-sage-600">
+    <section data-sec="Para quem é" className="section bg-sage-600">
       <div className="container-app max-w-3xl">
         <div className="mx-auto max-w-xl text-center">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.forwhom_eyebrow}</p>

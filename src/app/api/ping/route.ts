@@ -23,10 +23,18 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   const sid = clip(body?.sid, 64);
   if (!sid || !/^[A-Za-z0-9_-]{8,64}$/.test(sid)) return new NextResponse(null, { status: 204 });
+  const now = new Date();
+
+  // Saída (fechou a aba): empurra lastSeenAt para o passado p/ sair da lista "online" na hora.
+  if (body?.left === true) {
+    await db.visitor.update({ where: { id: sid }, data: { lastSeenAt: new Date(now.getTime() - 10 * 60_000) } }).catch(() => null);
+    return new NextResponse(null, { status: 204 });
+  }
+
   const path = typeof body?.path === "string" && body.path.startsWith("/") ? body.path.slice(0, 300) : null;
   if (path?.startsWith("/admin")) return new NextResponse(null, { status: 204 });
   const nav = body?.nav === true;
-  const now = new Date();
+  const section = clip(body?.section, 40);
 
   await db.visitor
     .upsert({
@@ -35,13 +43,14 @@ export async function POST(req: NextRequest) {
         id: sid,
         path,
         landingPage: path,
+        section,
         device: deviceOf(ua),
         source: clip(body?.source, 60),
         campaign: clip(body?.campaign, 120),
         firstSeenAt: now,
         lastSeenAt: now,
       },
-      update: { lastSeenAt: now, ...(path ? { path } : {}), ...(nav ? { pageViews: { increment: 1 } } : {}) },
+      update: { lastSeenAt: now, section, ...(path ? { path } : {}), ...(nav ? { pageViews: { increment: 1 } } : {}) },
     })
     .catch(() => null);
 

@@ -50,7 +50,7 @@ export default function SocialProof({ items }: { items: ProofItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="section bg-white">
+    <section data-sec="Prova social" className="section bg-white">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="eyebrow mb-4">Quem já montou a sua</p>

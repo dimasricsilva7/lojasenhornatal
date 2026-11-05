@@ -5,7 +5,7 @@ import type { SettingsMap } from "@/lib/settings";
 
 export default function FinalCta({ fromPriceCents, deadline, settings }: { fromPriceCents: number; deadline?: string; settings: SettingsMap }) {
   return (
-    <section className="section bg-sage-600 text-white">
+    <section data-sec="Chamada final" className="section bg-sage-600 text-white">
       <div className="container-app max-w-xl text-center">
         <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
           {settings.finalcta_title}

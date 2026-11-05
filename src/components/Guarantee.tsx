@@ -12,7 +12,7 @@ export default function Guarantee({
   howTo?: string;
 }) {
   return (
-    <section className="section bg-clay-600">
+    <section data-sec="Garantia" className="section bg-clay-600">
       <div className="container-app max-w-2xl">
         <div className="rounded-xl2 bg-white/10 p-8 ring-1 ring-white/20 sm:p-10">
           <div className="flex items-center gap-3">

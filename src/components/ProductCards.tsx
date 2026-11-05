@@ -17,7 +17,7 @@ export type ProductCard = {
 
 export default function ProductCards({ products, settings }: { products: ProductCard[]; settings: SettingsMap }) {
   return (
-    <section id="produtos" className="section scroll-mt-20 bg-sage-600">
+    <section id="produtos" data-sec="Produtos / Oferta" className="section scroll-mt-20 bg-sage-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.products_eyebrow}</p>

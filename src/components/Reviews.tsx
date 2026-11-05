@@ -32,7 +32,7 @@ export default function Reviews({
   if (reviews.length === 0) return null;
 
   return (
-    <section className="section bg-white">
+    <section data-sec="Avaliações" className="section bg-white">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="eyebrow mb-4">Avaliações reais</p>

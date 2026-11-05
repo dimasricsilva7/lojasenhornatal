@@ -4,11 +4,12 @@ import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const WINDOW_MS = 90_000; // batimento a cada 30 s → online = visto nos últimos 90 s
+const WINDOW_MS = 45_000; // batimento a cada 20 s → online = visto nos últimos 45 s
 
-function pageLabel(raw: string | null) {
+function pageLabel(raw: string | null, section: string | null) {
   const path = raw?.split("?")[0] ?? null;
-  if (!path || path === "/") return "Página da árvore";
+  // Na página da árvore, mostra a seção em que o visitante está (hero, vídeo, produtos…).
+  if (!path || path === "/") return section?.trim() || "Topo (Hero)";
   if (path === "/checkout") return "Checkout";
   if (path.startsWith("/upsell")) return "Oferta pós-compra";
   if (path.startsWith("/pedido/sucesso")) return "Compra concluída";
@@ -42,12 +43,12 @@ export async function GET() {
       online: sessions.length,
       todaySessions: today,
       inCheckout: sessions.filter((s) => s.path?.startsWith("/checkout")).length,
-      pages: count((s) => pageLabel(s.path)).slice(0, 8),
+      pages: count((s) => pageLabel(s.path, s.section)).slice(0, 8),
       sources: count((s) => s.source ?? "Direto"),
       devices: count((s) => DEVICE_LABEL[s.device ?? ""] ?? "Outro"),
       visitors: sessions.slice(0, 50).map((s) => ({
         id: s.id.slice(0, 6),
-        page: pageLabel(s.path),
+        page: pageLabel(s.path, s.section),
         source: s.source ?? "Direto",
         campaign: s.campaign,
         device: DEVICE_LABEL[s.device ?? ""] ?? "Outro",

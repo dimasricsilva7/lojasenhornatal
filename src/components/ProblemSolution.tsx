@@ -6,7 +6,7 @@ const PAIN_ICONS = [Clock, Unplug, ShoppingBag, TreePine];
 export function ProblemSection({ settings }: { settings: SettingsMap }) {
   const pains = settingLines(settings.problem_pains);
   return (
-    <section className="section bg-sage-600">
+    <section data-sec="Problema" className="section bg-sage-600">
       <div className="container-app max-w-3xl">
         <p className="mb-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white/80">{settings.problem_eyebrow}</p>
         <h2 className="text-center text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
@@ -52,7 +52,7 @@ function HowToMedia({ url }: { url: string }) {
 export function HowItWorksSection({ mediaUrl, settings }: { mediaUrl?: string; settings: SettingsMap }) {
   const steps = settingRows(settings.howto_steps);
   return (
-    <section id="como-funciona" className="section scroll-mt-16 bg-sage-700 text-cream-50">
+    <section id="como-funciona" data-sec="Vídeo / Como montar" className="section scroll-mt-16 bg-sage-700 text-cream-50">
       <div className={`container-app grid items-center gap-10 ${mediaUrl ? "lg:grid-cols-[1.2fr_1fr]" : ""}`}>
         <div>
           <div className={mediaUrl ? "max-w-xl" : "mx-auto max-w-xl text-center"}>

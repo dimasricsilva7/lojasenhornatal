@@ -44,11 +44,22 @@ function source(): { source: string; campaign: string | null } {
   return value;
 }
 
+// Seção visível no momento (preenchida pelo IntersectionObserver abaixo).
+let currentSection: string | null = null;
+
 function send(path: string, nav: boolean) {
   const sid = sessionId();
   if (!sid) return;
-  const body = JSON.stringify({ sid, path, nav, ...source() });
+  const body = JSON.stringify({ sid, path, nav, section: currentSection, ...source() });
   fetch("/api/ping", { method: "POST", body, keepalive: true, headers: { "Content-Type": "application/json" } }).catch(() => {});
+}
+
+/** Avisa a saída na hora (fechou a aba / navegou para fora), para não ficar "online" sem estar. */
+function sendLeave() {
+  const sid = sessionId();
+  if (!sid) return;
+  const blob = new Blob([JSON.stringify({ sid, left: true })], { type: "application/json" });
+  navigator.sendBeacon?.("/api/ping", blob);
 }
 
 /** Mantém o visitante na lista "Online agora" do admin. */
@@ -58,8 +69,26 @@ export default function Pinger() {
 
   useEffect(() => {
     pathRef.current = pathname;
+    currentSection = null; // ao trocar de página, zera até o observer reavaliar
     if (pathname.startsWith("/admin")) return;
     send(pathname, true);
+  }, [pathname]);
+
+  // Observa as seções marcadas com data-sec e guarda a mais visível.
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) return;
+    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-sec]"));
+    if (els.length === 0) return;
+    // Scrollspy: a seção ativa é a que cruza ~40% da altura da tela. Em trechos
+    // sem rótulo, mantém a última seção rotulada (a de cima).
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) currentSection = (e.target as HTMLElement).dataset.sec ?? currentSection;
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, [pathname]);
 
   useEffect(() => {
@@ -67,11 +96,13 @@ export default function Pinger() {
       if (document.visibilityState !== "visible" || pathRef.current.startsWith("/admin")) return;
       send(pathRef.current, false);
     };
-    const id = setInterval(beat, 30_000);
+    const id = setInterval(beat, 20_000);
     document.addEventListener("visibilitychange", beat);
+    window.addEventListener("pagehide", sendLeave);
     return () => {
       clearInterval(id);
       document.removeEventListener("visibilitychange", beat);
+      window.removeEventListener("pagehide", sendLeave);
     };
   }, []);
 

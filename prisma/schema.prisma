@@ -260,6 +260,7 @@ model Visitor {
   id          String   @id
   path        String?
   landingPage String?
+  section     String?
   device      String?
   source      String?
   campaign    String?

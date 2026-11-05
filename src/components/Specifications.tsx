@@ -30,7 +30,7 @@ export default function Specifications({ settings }: { settings: Specs }) {
   if (entries.length === 0) return null;
 
   return (
-    <section className="section bg-white">
+    <section data-sec="Ficha técnica" className="section bg-white">
       <div className="container-app max-w-2xl">
         <div className="text-center">
           <p className="eyebrow mb-4">Ficha técnica</p>

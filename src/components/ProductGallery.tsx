@@ -6,7 +6,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
   if (list.length < 2) return null;
 
   return (
-    <section className="section bg-white">
+    <section data-sec="Fotos do produto" className="section bg-white">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="eyebrow mb-4">Veja de perto</p>
