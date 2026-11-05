@@ -50,7 +50,7 @@ export default function Hero({
             <SizeSelector sizes={sizes} defaultSlug={defaultSlug} />
           </div>
 
-          <TrustBar className="mt-6" variant="compact" />
+          <TrustBar className="mt-6 text-white/85 [&_svg]:text-white" variant="compact" />
         </div>
       </div>
     </section>

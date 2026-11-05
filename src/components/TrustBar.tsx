@@ -50,8 +50,8 @@ export default function TrustBar({
     return (
       <ul className={`flex flex-wrap gap-x-5 gap-y-2 ${className}`}>
         {ITEMS.map(({ icon: Icon, title }) => (
-          <li key={title} className="flex items-center gap-1.5 text-sm text-graphite-700">
-            <Icon className="h-4 w-4 shrink-0 text-sage-600" strokeWidth={2} />
+          <li key={title} className="flex items-center gap-1.5 text-sm">
+            <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
             {title}
           </li>
         ))}
