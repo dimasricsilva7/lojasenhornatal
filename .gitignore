@@ -22,3 +22,6 @@ npm-debug.log*
 coverage/
 tsconfig.tsbuildinfo
 _to_delete/
+
+# playwright-cli snapshots
+.playwright-cli/
