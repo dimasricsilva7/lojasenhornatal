@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const db = new PrismaClient();
 
 const DESC =
-  "Árvore de Natal verde tradicional que já vem montada e com pisca-pisca instalado, bivolt, com enfeites inclusos (a partir de 50, conforme o tamanho). Tira da caixa, abre os galhos e liga na tomada.";
+  "Árvore de Natal verde tradicional que vem achatada na caixa, já decorada e com pisca-pisca instalado. Encaixe o mastro, puxe para cima e ligue na tomada. Bivolt, com enfeites inclusos (a partir de 50, conforme o tamanho).";
 
 type Seed = {
   slug: string;
@@ -29,13 +29,13 @@ const PRODUCTS: Seed[] = [
   { slug: "arvore-200", name: "Árvore de Natal Montada 1,80 m", type: "MAIN", priceCents: 9700, sortOrder: 1, shortPitch: "1,80 m", featured: true, description: DESC },
   { slug: "arvore-220", name: "Árvore de Natal Montada 2,20 m", type: "MAIN", priceCents: 11700, sortOrder: 2, shortPitch: "2,20 m", description: DESC },
 
-  // Order bumps. Só 2 ligados por padrão (mais opções = mais indecisão); os outros ficam prontos no admin.
+  // Order bumps: todos ativos e exibidos no checkout (liga/desliga em Admin > Produtos).
   { slug: "pisca-cascata-branco", name: "Pisca-pisca Cascata Branco", type: "ORDER_BUMP", priceCents: 2990, sortOrder: 0, featured: true, orderBumpEnabled: true, orderBumpHeadline: "Leve também o pisca-pisca cascata branco para a janela ou a parede da sala." },
   { slug: "kit-20-bolas-premium", name: "Kit 20 Bolas de Natal Premium", type: "ORDER_BUMP", priceCents: 2490, sortOrder: 1, orderBumpEnabled: true, orderBumpHeadline: "Quer a árvore ainda mais cheia? Adicione 20 bolas de Natal premium." },
-  { slug: "kit-mesa-posta-6", name: "Kit Natalino Mesa Posta (6 unidades)", type: "ORDER_BUMP", priceCents: 1990, sortOrder: 2, orderBumpHeadline: "Complete a ceia com o kit natalino de mesa posta (6 unidades)." },
-  { slug: "saia-arvore-70cm", name: "Saia Decorativa para Árvore de Natal 70 cm", type: "ORDER_BUMP", priceCents: 2990, sortOrder: 3, orderBumpHeadline: "Esconda a base com a saia decorativa de 70 cm." },
-  { slug: "caixas-presente-decorativas", name: "Kit de Caixas de Presente Decorativas", type: "ORDER_BUMP", priceCents: 3990, sortOrder: 4, orderBumpHeadline: "Monte o cenário completo com caixas de presente decorativas aos pés da árvore." },
-  { slug: "pisca-branco-3m", name: "Pisca-pisca Branco 3 m", type: "ORDER_BUMP", priceCents: 3490, sortOrder: 5, orderBumpHeadline: "Mais luz: adicione um pisca-pisca branco de 3 m." },
+  { slug: "kit-mesa-posta-6", name: "Kit Natalino Mesa Posta (6 unidades)", type: "ORDER_BUMP", priceCents: 1990, sortOrder: 2, orderBumpEnabled: true, orderBumpHeadline: "Complete a ceia com o kit natalino de mesa posta (6 unidades)." },
+  { slug: "saia-arvore-70cm", name: "Saia Decorativa para Árvore de Natal 70 cm", type: "ORDER_BUMP", priceCents: 2990, sortOrder: 3, orderBumpEnabled: true, orderBumpHeadline: "Esconda a base com a saia decorativa de 70 cm." },
+  { slug: "caixas-presente-decorativas", name: "Kit de Caixas de Presente Decorativas", type: "ORDER_BUMP", priceCents: 3990, sortOrder: 4, orderBumpEnabled: true, orderBumpHeadline: "Monte o cenário completo com caixas de presente decorativas aos pés da árvore." },
+  { slug: "pisca-branco-3m", name: "Pisca-pisca Branco 3 m", type: "ORDER_BUMP", priceCents: 3490, sortOrder: 5, orderBumpEnabled: true, orderBumpHeadline: "Mais luz: adicione um pisca-pisca branco de 3 m." },
 
   // Upsells: TODOS os ativos são mostrados em sequência, na ordem; depois vêm os downsells.
   { slug: "kit-natal-completo-premium", name: "Kit Natal Completo Premium", type: "UPSELL", priceCents: 6700, sortOrder: 0, upsellEnabled: true, upsellHeadline: "Antes de fechar: complete a decoração com o Kit Natal Completo Premium. Ele vai junto no mesmo envio." },

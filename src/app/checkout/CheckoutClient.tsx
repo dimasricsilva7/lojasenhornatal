@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { Check, Copy, Loader2, ShieldCheck, Lock, User, MapPin, ShoppingBag, FileText, Sparkles, Truck, BadgeCheck, QrCode } from "lucide-react";
+import { Check, Copy, Loader2, ShieldCheck, Lock, User, MapPin, ShoppingBag, Gift, Sparkles, Truck, BadgeCheck } from "lucide-react";
 import { formatBRL } from "@/lib/pricing";
 import { trackPixel } from "@/components/MetaPixel";
 import { readAttribution } from "@/components/TrackingCapture";
@@ -32,7 +32,8 @@ type OrderBump = {
   featured?: boolean;
   headline: string;
 };
-type Product = { slug: string; name: string; priceCents: number; compareAtCents?: number; image: string };
+type Product = { slug: string; name: string; priceCents: number; compareAtCents?: number; image: string; label: string };
+type Size = { slug: string; label: string; priceCents: number };
 
 const POLL_SCHEDULE = [0, 3000, 6000, 10000, 15000, 20000, 30000, 45000, 60000];
 const POLL_STEADY_STATE = 60000;
@@ -45,7 +46,17 @@ type PixState = {
   pixExpiresAt: string | null;
 };
 
-export default function CheckoutClient({ product, orderBumps }: { product: Product; orderBumps: OrderBump[] }) {
+export default function CheckoutClient({
+  product,
+  orderBumps,
+  sizes,
+  shippingDays,
+}: {
+  product: Product;
+  orderBumps: OrderBump[];
+  sizes: Size[];
+  shippingDays: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -66,6 +77,8 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [cepLoading, setCepLoading] = useState(false);
+  // found = CEP achou rua e bairro (mostra só número/complemento); manual = cliente digita o endereço.
+  const [addressMode, setAddressMode] = useState<"pending" | "found" | "manual">("pending");
 
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
   const purchaseEventId = useMemo(() => crypto.randomUUID(), []);
@@ -100,28 +113,35 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  async function handleCepBlur() {
-    const digits = form.zip.replace(/\D/g, "");
-    if (digits.length !== 8) return;
+  async function lookupCep(digits: string) {
     setCepLoading(true);
     try {
       const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
       const data = await res.json();
-      if (!data.erro) {
-        setForm((f) => ({
-          ...f,
-          address: data.logradouro || f.address,
-          neighborhood: data.bairro || f.neighborhood,
-          city: data.localidade || f.city,
-          state: data.uf || f.state,
-        }));
-      }
+      if (data.erro) throw new Error("cep");
+      setForm((f) => ({
+        ...f,
+        address: data.logradouro || "",
+        neighborhood: data.bairro || "",
+        city: data.localidade || "",
+        state: data.uf || "",
+      }));
+      // CEP geral de cidade pequena não traz rua/bairro: aí o cliente completa.
+      setAddressMode(data.logradouro && data.bairro ? "found" : "manual");
     } catch {
-      // preenchimento automático é best-effort — usuário pode digitar manualmente
+      setAddressMode("manual");
     } finally {
       setCepLoading(false);
     }
   }
+
+  // Busca o endereço assim que o CEP tem 8 dígitos (sem precisar sair do campo).
+  const zipDigits = form.zip.replace(/\D/g, "");
+  useEffect(() => {
+    if (zipDigits.length === 8) lookupCep(zipDigits);
+    else setAddressMode("pending");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zipDigits]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -297,77 +317,155 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
   }
 
   const selectedBumpList = orderBumps.filter((b) => selectedBumps.has(b.id));
-  const featuredBumps = orderBumps.filter((b) => b.featured);
-  const regularBumps = orderBumps.filter((b) => !b.featured);
+  const showAddressFields = addressMode === "manual";
 
   return (
-    <main className="min-h-screen bg-cream-50 py-6 sm:py-10">
-      <div className="container-app max-w-5xl">
-        <div className="mb-6 flex items-center gap-2 text-sm text-graphite-700/70">
-          <Link href="/" className="hover:text-graphite-950">Loja</Link>
-          <span>/</span>
-          <span className="font-medium text-graphite-950">Finalizar pedido</span>
+    <main className="min-h-screen bg-cream-50 pb-12">
+      {/* Cabeçalho enxuto: só a marca e o selo de segurança (sem menus que tiram o foco da compra) */}
+      <header className="border-b border-graphite-900/[0.06] bg-white">
+        <div className="container-app flex h-16 max-w-5xl items-center justify-between">
+          <Link href="/" aria-label="Voltar à loja">
+            <Image src="/images/logo.png" alt="Senhor Natal" width={900} height={292} priority className="h-10 w-auto" />
+          </Link>
+          <span className="flex items-center gap-1.5 text-xs font-bold text-sage-700">
+            <Lock className="h-4 w-4" /> Compra 100% segura
+          </span>
         </div>
+      </header>
 
-        <div className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      <div className="container-app max-w-5xl pt-5 sm:pt-8">
+        {/* O que o cliente está comprando, logo no topo */}
+        <section className="mb-5 overflow-hidden rounded-xl2 bg-white shadow-lift ring-1 ring-graphite-950/[0.05]">
+          <div className="grid sm:grid-cols-[240px_1fr]">
+            <div className="relative aspect-[16/10] bg-cream-100 sm:aspect-auto sm:min-h-[240px]">
+              <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 100vw, 240px" className="object-cover" priority />
+            </div>
+            <div className="p-4 sm:p-6">
+              <p className="eyebrow">Você está comprando</p>
+              <h1 className="mt-1 text-xl font-extrabold leading-tight text-graphite-950 sm:text-2xl">{product.name}</h1>
+              <ul className="mt-3 space-y-1.5 text-sm text-graphite-800">
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Já vem decorada, com pisca-pisca e enfeites</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Monta em minutos: encaixa o mastro, puxa e liga</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Bivolt · Frete grátis · Entrega em {shippingDays} dias úteis</li>
+              </ul>
+              <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                    <span className="mr-2 text-sm text-graphite-700/40 line-through">{formatBRL(product.compareAtCents)}</span>
+                  )}
+                  <span className="text-3xl font-extrabold tracking-tight text-graphite-950">{formatBRL(product.priceCents)}</span>
+                  <span className="ml-1 text-xs text-graphite-700/70">no PIX</span>
+                </div>
+                {sizes.length > 1 && (
+                  <div>
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-graphite-700/60">Tamanho</p>
+                    <div className="flex gap-1.5">
+                      {sizes.map((sz) => (
+                        <Link
+                          key={sz.slug}
+                          href={`/checkout?tamanho=${sz.slug}`}
+                          replace
+                          scroll={false}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                            sz.slug === product.slug
+                              ? "border-sage-600 bg-sage-600 text-white"
+                              : "border-graphite-900/15 bg-white text-graphite-800 hover:border-sage-500"
+                          }`}
+                        >
+                          {sz.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Selos de confiança logo abaixo do item — reforço antes de preencher os dados */}
+        <section className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[
             { icon: Lock, label: "Pagamento criptografado" },
             { icon: Truck, label: "Frete grátis p/ todo o Brasil" },
-            { icon: BadgeCheck, label: "Garantia de 7 dias" },
-            { icon: QrCode, label: "Aprovação na hora no PIX" },
+            { icon: ShieldCheck, label: "Garantia de 7 dias" },
+            { icon: BadgeCheck, label: "Aprovação na hora" },
           ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2 rounded-xl border border-graphite-900/[0.06] bg-white px-3 py-2.5 shadow-card">
-              <Icon className="h-4 w-4 shrink-0 text-sage-600" strokeWidth={2} />
-              <span className="text-[11px] font-semibold leading-tight text-graphite-800 sm:text-xs">{label}</span>
+            <div key={label} className="flex items-center gap-2 rounded-xl bg-white p-3 text-xs font-semibold text-graphite-800 shadow-sm ring-1 ring-graphite-950/[0.05]">
+              <Icon className="h-5 w-5 shrink-0 text-sage-600" />
+              <span className="leading-tight">{label}</span>
             </div>
           ))}
-        </div>
+        </section>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 bg-sage-50 px-4 py-3 text-sm text-graphite-800 ring-1 ring-sage-200">
-          <span>Você escolheu: <strong className="text-graphite-950">{product.name}</strong></span>
-          <Link href="/#tamanhos" className="font-semibold text-sage-700 underline underline-offset-2">Trocar tamanho</Link>
-        </div>
-
-        <form onSubmit={handleSubmit} className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+        <form onSubmit={handleSubmit} className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           <div className="min-w-0 space-y-5">
             <SectionCard icon={User} step={1} title="Seus dados">
-              <Input label="Nome completo" value={form.name} onChange={(v) => updateField("name", v)} required />
+              <Input label="Nome completo" value={form.name} onChange={(v) => updateField("name", v)} required placeholder="Como está no seu documento" />
               <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
-                <Input label="CPF" value={form.cpf} onChange={(v) => updateField("cpf", maskCPF(v))} required placeholder="000.000.000-00" inputMode="numeric" />
-                <Input label="Telefone" value={form.phone} onChange={(v) => updateField("phone", maskPhone(v))} required placeholder="(00) 00000-0000" inputMode="tel" />
+                <Input label="WhatsApp" value={form.phone} onChange={(v) => updateField("phone", maskPhone(v))} required placeholder="(00) 00000-0000" inputMode="tel" hint="Enviamos o rastreio por aqui" />
+                <Input label="CPF" value={form.cpf} onChange={(v) => updateField("cpf", maskCPF(v))} required placeholder="000.000.000-00" inputMode="numeric" hint="Exigido para emitir o PIX" />
               </div>
-              <Input label="E-mail" type="email" value={form.email} onChange={(v) => updateField("email", v)} required />
+              <Input label="E-mail" type="email" value={form.email} onChange={(v) => updateField("email", v)} required placeholder="voce@email.com" inputMode="email" />
             </SectionCard>
 
-            <SectionCard icon={MapPin} step={2} title="Endereço de entrega">
-              <Input label="CEP" value={form.zip} onChange={(v) => updateField("zip", maskCEP(v))} onBlur={handleCepBlur} required placeholder="00000-000" inputMode="numeric" loading={cepLoading} hint="Preenchemos o endereço automaticamente" />
-              <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-[minmax(0,1fr)_120px]">
-                <Input label="Endereço" value={form.address} onChange={(v) => updateField("address", v)} required />
-                <Input label="Número" value={form.number} onChange={(v) => updateField("number", v)} required />
-              </div>
-              <Input label="Complemento (opcional)" value={form.complement} onChange={(v) => updateField("complement", v)} />
-              <Input label="Bairro" value={form.neighborhood} onChange={(v) => updateField("neighborhood", v)} required />
-              <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-[minmax(0,1fr)_90px]">
-                <Input label="Cidade" value={form.city} onChange={(v) => updateField("city", v)} required />
-                <Input label="UF" value={form.state} onChange={(v) => updateField("state", v.toUpperCase())} required maxLength={2} />
-              </div>
-            </SectionCard>
+            <SectionCard icon={MapPin} step={2} title="Entrega">
+              <Input
+                label="CEP"
+                value={form.zip}
+                onChange={(v) => updateField("zip", maskCEP(v))}
+                required
+                placeholder="00000-000"
+                inputMode="numeric"
+                loading={cepLoading}
+              />
+              {addressMode === "pending" && (
+                <p className="-mt-2 text-[11px] text-graphite-700/60">
+                  Digite o CEP e o endereço aparece sozinho.{" "}
+                  <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                    Não sei meu CEP
+                  </a>
+                </p>
+              )}
 
-            {featuredBumps.length > 0 && (
-              <SectionCard icon={Sparkles} step={3} title="Oferta especial" optional>
-                <div className="space-y-3">
-                  {featuredBumps.map((bump) => (
-                    <BumpRow key={bump.id} bump={bump} checked={selectedBumps.has(bump.id)} onToggle={() => toggleBump(bump.id)} highlight />
-                  ))}
+              {addressMode === "found" && (
+                <div className="flex items-start gap-3 rounded-xl bg-sage-50 p-3.5 ring-1 ring-sage-200">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" />
+                  <div className="min-w-0 flex-1 text-sm">
+                    <p className="font-bold text-graphite-950">{form.address}</p>
+                    <p className="text-graphite-700">{form.neighborhood} · {form.city}/{form.state}</p>
+                  </div>
+                  <button type="button" onClick={() => setAddressMode("manual")} className="shrink-0 text-xs font-semibold text-sage-700 underline underline-offset-2">
+                    Alterar
+                  </button>
                 </div>
-              </SectionCard>
-            )}
+              )}
 
-            {regularBumps.length > 0 && (
-              <SectionCard icon={ShoppingBag} step={featuredBumps.length > 0 ? 4 : 3} title="Produtos adicionais" optional>
-                <div className="space-y-3">
-                  {regularBumps.map((bump) => (
-                    <BumpRow key={bump.id} bump={bump} checked={selectedBumps.has(bump.id)} onToggle={() => toggleBump(bump.id)} />
+              {showAddressFields && (
+                <>
+                  <Input label="Endereço (rua, avenida)" value={form.address} onChange={(v) => updateField("address", v)} required />
+                  <Input label="Bairro" value={form.neighborhood} onChange={(v) => updateField("neighborhood", v)} required />
+                  <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-3">
+                    <Input label="Cidade" value={form.city} onChange={(v) => updateField("city", v)} required />
+                    <Input label="UF" value={form.state} onChange={(v) => updateField("state", v.toUpperCase())} required maxLength={2} />
+                  </div>
+                </>
+              )}
+
+              {addressMode !== "pending" && (
+                <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3">
+                  <Input label="Número" value={form.number} onChange={(v) => updateField("number", v)} required inputMode="numeric" />
+                  <Input label="Complemento (opcional)" value={form.complement} onChange={(v) => updateField("complement", v)} placeholder="Apto, bloco, casa…" />
+                </div>
+              )}
+            </SectionCard>
+
+            {orderBumps.length > 0 && (
+              <SectionCard icon={Sparkles} step={3} title="Aproveite e leve junto" optional>
+                <p className="-mt-2 text-xs text-graphite-700/70">Vai no mesmo envio, sem frete extra. É só marcar.</p>
+                <div className="space-y-2.5">
+                  {orderBumps.map((bump) => (
+                    <BumpRow key={bump.id} bump={bump} checked={selectedBumps.has(bump.id)} onToggle={() => toggleBump(bump.id)} highlight={bump.featured} />
                   ))}
                 </div>
               </SectionCard>
@@ -391,7 +489,7 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-graphite-950">{product.name}</p>
                     <div className="mt-1 flex items-baseline gap-1.5">
-                      {product.compareAtCents && (
+                      {product.compareAtCents && product.compareAtCents > product.priceCents && (
                         <span className="text-xs text-graphite-700/40 line-through">{formatBRL(product.compareAtCents)}</span>
                       )}
                       <span className="text-sm font-extrabold text-graphite-950">{formatBRL(product.priceCents)}</span>
@@ -423,9 +521,12 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
 
                 <button type="submit" disabled={submitting} className="btn-green mt-5 w-full">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-                  {submitting ? "Gerando PIX..." : "GERAR PIX"}
+                  {submitting ? "Gerando PIX..." : `PAGAR ${formatBRL(total)} NO PIX`}
                 </button>
 
+                <p className="mt-2 text-center text-[11px] text-graphite-700/70">
+                  Na próxima tela aparecem o QR Code e o código copia e cola. A aprovação é na hora.
+                </p>
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-graphite-700/70">
                   <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-sage-600" /> Compra segura</span>
                   <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-sage-600" /> Frete grátis</span>
@@ -471,19 +572,17 @@ function BumpRow({
         {bump.image ? (
           <Image src={bump.image} alt={bump.name} fill sizes="48px" className="object-contain" />
         ) : (
-          <FileText className="h-6 w-6 text-sage-600" strokeWidth={1.75} />
+          <Gift className="h-6 w-6 text-sage-600" strokeWidth={1.75} />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          {highlight && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sage-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              <Sparkles className="h-2.5 w-2.5" /> OFERTA
-            </span>
-          )}
-          <p className="truncate text-sm font-bold text-graphite-950">{bump.name}</p>
-        </div>
-        <p className="truncate text-xs text-graphite-700/70">{bump.headline}</p>
+        {highlight && (
+          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-sage-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            <Sparkles className="h-2.5 w-2.5" /> RECOMENDADO
+          </span>
+        )}
+        <p className="text-sm font-bold leading-snug text-graphite-950">{bump.name}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs text-graphite-700/70">{bump.headline}</p>
       </div>
       <div className="shrink-0 text-right">
         {bump.compareAtCents && (

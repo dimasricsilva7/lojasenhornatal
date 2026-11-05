@@ -16,14 +16,14 @@ export type ProductCard = {
 
 export default function ProductCards({ products }: { products: ProductCard[] }) {
   return (
-    <section id="produtos" className="section scroll-mt-20 bg-cream-50">
+    <section id="produtos" className="section scroll-mt-20 bg-sage-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
-          <p className="eyebrow mb-4">Escolha o seu tamanho</p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+          <p className="eyebrow mb-4 text-white/80">Escolha o seu tamanho</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
             Qual árvore combina com a sua casa?
           </h2>
-          <p className="mt-3 text-graphite-700">
+          <p className="mt-3 text-white/90">
             Todas já vêm montadas, com pisca-pisca e enfeites. Frete grátis para todo o Brasil.
           </p>
         </div>
@@ -33,7 +33,7 @@ export default function ProductCards({ products }: { products: ProductCard[] }) 
             <div key={p.slug} className="card-surface flex flex-col overflow-hidden transition-shadow hover:shadow-lift">
               <div className="relative aspect-square bg-cream-100">
                 {p.featured && (
-                  <span className="absolute left-3 top-3 z-10 rounded-full bg-sage-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                  <span className="absolute left-3 top-3 z-10 rounded-full bg-clay-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                     Mais escolhida
                   </span>
                 )}
@@ -60,7 +60,7 @@ export default function ProductCards({ products }: { products: ProductCard[] }) 
                   <span className="text-2xl font-extrabold tracking-tight text-graphite-950">{formatBRL(p.priceCents)}</span>
                 </div>
 
-                <Link href={`/checkout?tamanho=${p.slug}`} className="btn-green mt-5 w-full">
+                <Link href={`/checkout?tamanho=${p.slug}`} className="btn-primary mt-5 w-full">
                   COMPRAR {p.label}
                 </Link>
               </div>

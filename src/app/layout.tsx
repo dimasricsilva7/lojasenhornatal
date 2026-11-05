@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "Árvore de Natal que já vem montada, com pisca-pisca e enfeites. Bivolt, tamanhos para sala e apartamento, frete grátis e 7 dias para devolução.",
   openGraph: {
     title: "Árvore de Natal Montada | Senhor Natal",
-    description: "Tira da caixa, abre os galhos e liga na tomada. Frete grátis e pagamento no PIX.",
+    description: "Vem achatada e decorada: encaixa o mastro, puxa e liga na tomada. Frete grátis e pagamento no PIX.",
     url: siteUrl,
     siteName: "Senhor Natal",
     locale: "pt_BR",

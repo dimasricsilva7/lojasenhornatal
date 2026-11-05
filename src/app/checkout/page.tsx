@@ -1,14 +1,16 @@
 import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { sizeLabel, sizeName } from "@/lib/sizes";
+import { getSettings } from "@/lib/settings";
 import CheckoutClient from "./CheckoutClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ searchParams }: { searchParams: { tamanho?: string } }) {
-  const [mains, bumps] = await Promise.all([
+  const [mains, bumps, settings] = await Promise.all([
     db.product.findMany({ where: { type: "MAIN", active: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
-    db.product.findMany({ where: { orderBumpEnabled: true, active: true }, orderBy: { sortOrder: "asc" } }),
+    db.product.findMany({ where: { orderBumpEnabled: true, active: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
+    getSettings(),
   ]);
   const mainProduct =
     mains.find((p) => p.slug === searchParams.tamanho) ?? mains.find((p) => p.featured) ?? mains[0];
@@ -24,12 +26,15 @@ export default async function CheckoutPage({ searchParams }: { searchParams: { t
   return (
     <Suspense fallback={null}>
       <CheckoutClient
+        shippingDays={settings.shipping_days || "3 a 5"}
+        sizes={mains.map((m) => ({ slug: m.slug, label: sizeLabel(m), priceCents: m.priceCents }))}
         product={{
           slug: mainProduct.slug,
           name: sizeName(sizeLabel(mainProduct)),
           priceCents: mainProduct.priceCents,
           compareAtCents: mainProduct.compareAtCents ?? undefined,
           image: mainProduct.images[0] ?? "/images/placeholder.svg",
+          label: sizeLabel(mainProduct),
         }}
         orderBumps={bumps.map((b) => ({
           id: b.id,
