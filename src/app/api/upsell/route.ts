@@ -6,6 +6,8 @@ import { priceUpsell } from "@/lib/pricing";
 import { createPixTransaction, BravopayError } from "@/lib/bravopay";
 import { generateDisplayId } from "@/lib/ids";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sizeContext, UPGRADE_SLUG } from "@/lib/offers";
+import { fillSizeTokens } from "@/lib/sizes";
 
 const schema = z.object({
   idempotencyKey: z.string().uuid(),
@@ -38,6 +40,20 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Oferta indisponível" }, { status: 400 });
   }
+
+  // Cada oferta pode ser comprada uma vez por pedido (todas as ofertas são mostradas em sequência).
+  const alreadyBought = await db.orderItem.count({
+    where: { productId: priced.product.id, order: { parentOrderId: parent.id, isUpsellOrder: true, status: "PAID" } },
+  });
+  if (alreadyBought > 0) {
+    return NextResponse.json({ error: "Você já aproveitou esta oferta" }, { status: 400 });
+  }
+
+  const ctx = await sizeContext(parent.id);
+  if (priced.product.slug === UPGRADE_SLUG && (!ctx.largest || !ctx.bought || ctx.bought.id === ctx.largest.id)) {
+    return NextResponse.json({ error: "Você já comprou o maior tamanho" }, { status: 400 });
+  }
+  const itemName = fillSizeTokens(priced.product.name, { maior: ctx.maior, atual: ctx.atual });
 
   const bravopayProductId = priced.product.bravopayProductId || process.env.BRAVOPAY_PRODUCT_ID || undefined;
 
@@ -73,7 +89,7 @@ export async function POST(req: NextRequest) {
         items: {
           create: [{
             productId: priced.product.id,
-            name: priced.product.name,
+            name: itemName,
             kind: "upsell",
             quantity: 1,
             unitPriceCents: priced.priceCents,
@@ -95,7 +111,7 @@ export async function POST(req: NextRequest) {
       amountCents: order.totalCents,
       idempotencyKey: order.idempotencyKey,
       externalReference: order.displayId,
-      description: `Upsell: ${priced.product.name}`,
+      description: `Oferta: ${itemName}`,
       productId: bravopayProductId,
       customer: { name: parent.customer.name, email: parent.customer.email, cpf: parent.customer.cpf, phone: parent.customer.phone },
       metadata: { orderId: order.id, parentOrderId: parent.id },

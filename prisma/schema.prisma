@@ -25,6 +25,7 @@ enum ProductType {
   COMPLEMENTARY
   ORDER_BUMP
   UPSELL
+  DOWNSELL
 }
 
 enum CartStatus {
@@ -267,4 +268,19 @@ model Visitor {
   lastSeenAt  DateTime @default(now())
 
   @@index([lastSeenAt])
+}
+
+// Prova social da página (imagens e vídeos 9:16 escolhidos no admin por link).
+model SocialProof {
+  id        String   @id @default(cuid())
+  mediaType String   @default("image") // image | video
+  url       String
+  caption   String?
+  name      String?
+  city      String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([active, sortOrder])
 }

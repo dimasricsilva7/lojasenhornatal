@@ -1,32 +1,49 @@
-import { Check, X, Lightbulb, Sparkles, Zap, TreePine, Ruler } from "lucide-react";
+import { Check, X, Gift } from "lucide-react";
 
-const IN_THE_BOX = [
-  { icon: TreePine, title: "Árvore já montada", desc: "Verde tradicional, com a estrutura pronta. Nada de encaixar galho por galho." },
-  { icon: Lightbulb, title: "Pisca-pisca instalado", desc: "As luzes já vêm distribuídas pelos galhos. Sem fio embolado." },
-  { icon: Sparkles, title: "Enfeites inclusos", desc: "A partir de 50 enfeites, conforme o tamanho escolhido." },
-  { icon: Zap, title: "Bivolt", desc: "Funciona em 110 V e 220 V, em qualquer lugar do Brasil." },
-  { icon: Ruler, title: "3 tamanhos", desc: "1,20 m para apartamento e mesa de canto, 2,00 m e 2,20 m para salas e pé-direito alto." },
-];
 
-export function WhatsInTheBox() {
+export const DEFAULT_BOX_ITEMS = [
+  "Árvore verde tradicional, já decorada (abre como sanfona)",
+  "Mastro central de encaixe",
+  "Pisca-pisca já instalado nos galhos",
+  "Papais Noéis de pendurar",
+  "Caixinhas de presente penduradas",
+  "Pinhas penduradas",
+  "Bolas vermelhas e douradas",
+  "Laços e fitas vermelhas e douradas",
+  "Flores natalinas douradas",
+].join("\n");
+
+export function WhatsInTheBox({ items, imageUrl }: { items: string; imageUrl?: string | null }) {
+  const list = (items || DEFAULT_BOX_ITEMS).split("\n").map((l) => l.trim()).filter(Boolean);
   return (
     <section className="section bg-cream-50">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
           <p className="eyebrow mb-4">O que vem na caixa</p>
           <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
-            Tudo o que a sua árvore precisa, numa caixa só.
+            A árvore e toda a decoração, numa caixa só.
           </h2>
+          <p className="mt-3 text-graphite-700">Tudo já vem preso nos galhos. Você não precisa comprar nem pendurar nada.</p>
         </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {IN_THE_BOX.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="card-surface p-5">
-              <Icon className="h-6 w-6 text-sage-600" strokeWidth={1.75} />
-              <p className="mt-3 font-bold text-graphite-950">{title}</p>
-              <p className="mt-1 text-sm text-graphite-700/85">{desc}</p>
-            </div>
-          ))}
+        <div className={`mt-10 grid items-center gap-8 ${imageUrl ? "lg:grid-cols-2" : ""}`}>
+          {imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="Itens que vêm na caixa da árvore" className="mx-auto w-full max-w-md rounded-xl2 shadow-card" />
+          )}
+          <ul className={`grid gap-3 ${imageUrl ? "" : "mx-auto max-w-3xl sm:grid-cols-2"}`}>
+            {list.map((t) => (
+              <li key={t} className="card-surface flex items-center gap-3 p-4 text-base font-semibold text-graphite-900">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sage-50 text-sage-600">
+                  <Gift className="h-4 w-4" strokeWidth={2} />
+                </span>
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
+        <p className="mx-auto mt-6 max-w-xl text-center text-xs text-graphite-700/70">
+          A quantidade de enfeites varia conforme o tamanho (a partir de 50). Bivolt: 110 V e 220 V.
+        </p>
       </div>
     </section>
   );
@@ -37,6 +54,7 @@ const ROWS: [string, string, string][] = [
   ["Pisca-pisca", "Comprado à parte e enrolado à mão", "Já instalado"],
   ["Enfeites", "Comprados à parte, na correria", "Inclusos (a partir de 50)"],
   ["Compras", "Árvore + luzes + bolas, em lojas diferentes", "Um pedido só, com frete grátis"],
+  ["Em janeiro", "Desmontar enfeite por enfeite", "Abaixa, fecha achatada e guarda decorada"],
 ];
 
 export function Comparison() {

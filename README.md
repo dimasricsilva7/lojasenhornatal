@@ -74,7 +74,7 @@ Configure as variáveis de ambiente na Vercel (Production/Preview) antes do prim
 
 ## Senhor Natal — o que foi adaptado
 
-- **3 tamanhos = 3 produtos `MAIN`** (`arvore-120`, `arvore-200`, `arvore-220`). O campo "frase curta" (`shortPitch`) é o rótulo do seletor (ex.: `2,00 m`). O tamanho marcado como **destaque** abre selecionado e recebe o selo "Mais escolhida".
+- **3 tamanhos = 3 produtos `MAIN`** (slugs internos `arvore-120`, `arvore-200`, `arvore-220`). O rótulo do tamanho (`shortPitch`, ex.: `1,80 m`) é editado em Admin > Produtos e vale para o site inteiro (seletor, checkout, pedidos, FAQ e upgrade). O tamanho marcado como **destaque** abre selecionado e recebe o selo "Mais escolhida".
 - **Sem carrinho**: o botão do seletor leva direto para `/checkout?tamanho=<slug>`.
 - **Order bumps**: 6 cadastrados, só 2 ligados (pisca cascata e kit 20 bolas). Liga/desliga em `/admin/produtos`.
 - **Upsell**: aparece o primeiro `UPSELL` ativo com upsell ligado (Kit Natal Completo Premium). Os outros ficam prontos no admin.

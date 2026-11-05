@@ -8,7 +8,7 @@ import ProductImage from "@/components/ProductImage";
 
 export type SizeOption = {
   slug: string;
-  label: string; // ex: "2,00 m"
+  label: string; // ex: "1,80 m"
   name: string;
   priceCents: number;
   compareAtCents: number | null;

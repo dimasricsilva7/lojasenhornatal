@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { db } from "@/lib/db";
+import { sizeLabel, sizeName } from "@/lib/sizes";
 import CheckoutClient from "./CheckoutClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({ searchParams }: { searchParams: { tamanho?: string } }) {
   const [mains, bumps] = await Promise.all([
-    db.product.findMany({ where: { type: "MAIN", active: true }, orderBy: { sortOrder: "asc" } }),
+    db.product.findMany({ where: { type: "MAIN", active: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     db.product.findMany({ where: { orderBumpEnabled: true, active: true }, orderBy: { sortOrder: "asc" } }),
   ]);
   const mainProduct =
@@ -25,7 +26,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: { t
       <CheckoutClient
         product={{
           slug: mainProduct.slug,
-          name: mainProduct.name,
+          name: sizeName(sizeLabel(mainProduct)),
           priceCents: mainProduct.priceCents,
           compareAtCents: mainProduct.compareAtCents ?? undefined,
           image: mainProduct.images[0] ?? "/images/placeholder.svg",

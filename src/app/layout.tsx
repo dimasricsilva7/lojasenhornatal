@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | Senhor Natal",
   },
   description:
-    "Árvore de Natal que já vem montada, com pisca-pisca e enfeites. Bivolt, 3 tamanhos (1,20 m, 2,00 m e 2,20 m), frete grátis e 7 dias para devolução.",
+    "Árvore de Natal que já vem montada, com pisca-pisca e enfeites. Bivolt, tamanhos para sala e apartamento, frete grátis e 7 dias para devolução.",
   openGraph: {
     title: "Árvore de Natal Montada | Senhor Natal",
     description: "Tira da caixa, abre os galhos e liga na tomada. Frete grátis e pagamento no PIX.",

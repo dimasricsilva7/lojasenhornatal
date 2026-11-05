@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { POLICIES } from "@/lib/policies";
 
 type FooterSettings = Record<string, string> & {
@@ -15,7 +16,7 @@ export default function SiteFooter({ settings }: { settings: FooterSettings }) {
   return (
     <footer className="border-t border-graphite-900/10 bg-cream-50 py-12">
       <div className="container-app flex flex-col items-center gap-4 text-center text-sm text-graphite-700">
-        <p className="text-base font-extrabold text-graphite-950">{settings.store_name}</p>
+        <Image src="/images/logo.png" alt={settings.store_name} width={900} height={292} className="h-14 w-auto" />
         <p>Frete grátis · Pagamento via PIX · Entrega em {settings.shipping_days || "3 a 5"} dias úteis</p>
 
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">

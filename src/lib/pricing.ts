@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { sizeLabel, sizeName } from "@/lib/sizes";
 
 export const SHIPPING_CENTS = 0; // frete grátis
 
@@ -38,7 +39,7 @@ export async function priceCheckout(input: {
   const items: PricedItem[] = [
     {
       productId: mainProduct.id,
-      name: mainProduct.name,
+      name: mainProduct.type === "MAIN" ? sizeName(sizeLabel(mainProduct)) : mainProduct.name,
       kind: "main",
       quantity: 1,
       unitPriceCents: mainProduct.priceCents,
@@ -77,7 +78,7 @@ export async function priceCheckout(input: {
 
 export async function priceUpsell(productId: string) {
   const product = await db.product.findUnique({ where: { id: productId } });
-  if (!product || !product.active || !product.upsellEnabled) {
+  if (!product || !product.active || !product.upsellEnabled || (product.type !== "UPSELL" && product.type !== "DOWNSELL")) {
     throw new Error("Oferta indisponível");
   }
   const priceCents = product.upsellPriceCents ?? product.priceCents;

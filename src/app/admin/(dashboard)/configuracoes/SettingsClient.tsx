@@ -29,6 +29,9 @@ const GROUPS: { title: string; fields: Field[] }[] = [
   {
     title: "Especificações do produto (deixe em branco o que não se aplica)",
     fields: [
+      { key: "box_items", label: "O que vem na caixa (um item por linha)", textarea: true, hint: "Vazio = lista padrão (árvore decorada, mastro, pisca-pisca, Papais Noéis, caixinhas de presente, pinhas, bolas, laços e flores)." },
+      { key: "box_image_url", label: "Foto dos itens da caixa (link, opcional)" },
+      { key: "demo_video_url", label: "Link do vídeo/GIF de montagem (ou envie o arquivo acima)", hint: "Aparece ao lado do passo a passo \"Como montar\". Vídeo MP4/WEBM em pé (9:16) ou GIF." },
       { key: "spec_material", label: "Material" },
       { key: "spec_dimensions", label: "Dimensões" },
       { key: "spec_weight", label: "Peso" },
@@ -106,9 +109,9 @@ export default function SettingsClient() {
     <form onSubmit={handleSave} className="max-w-2xl space-y-6">
       <div className="card-surface space-y-4 p-6">
         <div>
-          <p className="text-sm font-bold text-graphite-950">Vídeo de demonstração</p>
+          <p className="text-sm font-bold text-graphite-950">Vídeo de como montar a árvore</p>
           <p className="mt-1 text-xs text-graphite-800/60">
-            Aparece logo abaixo da hero, na página inicial. Envie na vertical (formato 9:16), como um vídeo de celular. Formatos aceitos: MP4, MOV ou WEBM.
+            Aparece ao lado do passo a passo &quot;Como montar&quot;. Envie na vertical (9:16), como um vídeo de celular. MP4, MOV, WEBM ou GIF.
           </p>
         </div>
 
@@ -151,7 +154,7 @@ export default function SettingsClient() {
                 <textarea
                   value={settings[field.key] ?? ""}
                   onChange={(e) => setSettings((s) => ({ ...s, [field.key]: e.target.value }))}
-                  rows={3}
+                  rows={field.key === "box_items" ? 9 : 3}
                   className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
                 />
               ) : (
@@ -161,6 +164,7 @@ export default function SettingsClient() {
                   className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
                 />
               )}
+              {field.hint && <span className="mt-1 block text-xs text-graphite-800/50">{field.hint}</span>}
             </label>
           ))}
         </div>

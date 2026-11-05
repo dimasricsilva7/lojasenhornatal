@@ -18,7 +18,7 @@ const createSchema = z.object({
   priceCents: z.number().int().positive(),
   compareAtCents: z.number().int().positive().optional().nullable(),
   images: z.array(z.string()).default([]),
-  type: z.enum(["MAIN", "COMPLEMENTARY", "ORDER_BUMP", "UPSELL"]),
+  type: z.enum(["MAIN", "COMPLEMENTARY", "ORDER_BUMP", "UPSELL", "DOWNSELL"]),
   bravopayProductId: z.string().optional().nullable(),
   shortPitch: z.string().optional().nullable(),
 });

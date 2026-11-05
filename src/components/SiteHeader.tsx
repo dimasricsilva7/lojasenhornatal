@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TreePine } from "lucide-react";
+import Image from "next/image";
 
 export default function SiteHeader({ storeName, shippingDays, deadline }: { storeName: string; shippingDays?: string; deadline?: string }) {
   return (
@@ -9,12 +9,9 @@ export default function SiteHeader({ storeName, shippingDays, deadline }: { stor
         {deadline ? ` · Pedidos até ${deadline} chegam antes do Natal` : ""}
       </div>
       <header className="sticky top-0 z-30 border-b border-graphite-900/[0.06] bg-cream-50/90 backdrop-blur">
-        <div className="container-app flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-600 text-cream-50">
-              <TreePine className="h-4 w-4" strokeWidth={2} />
-            </span>
-            <span className="text-base font-extrabold tracking-tight text-graphite-950">{storeName}</span>
+        <div className="container-app flex h-[68px] items-center justify-between">
+          <Link href="/" className="flex items-center" aria-label={storeName}>
+            <Image src="/images/logo.png" alt={storeName} width={900} height={292} priority className="h-11 w-auto sm:h-12" />
           </Link>
           <Link href="/#tamanhos" className="btn-primary px-5 py-2.5 text-xs">
             Comprar

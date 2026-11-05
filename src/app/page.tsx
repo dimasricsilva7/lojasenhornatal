@@ -3,7 +3,8 @@ import { getSettings } from "@/lib/settings";
 import { getPublishedReviewStats, getPublishedReviews, getPublishedReviewPhotos } from "@/lib/reviews";
 import SiteHeader from "@/components/SiteHeader";
 import Hero from "@/components/Hero";
-import DemoVideo from "@/components/DemoVideo";
+import SocialProof from "@/components/SocialProof";
+import Snowfall from "@/components/Snowfall";
 import { ProblemSection, HowItWorksSection } from "@/components/ProblemSolution";
 import ProductGallery from "@/components/ProductGallery";
 import Benefits, { WhatsInTheBox, Comparison } from "@/components/Benefits";
@@ -18,16 +19,18 @@ import StickyCta from "@/components/StickyCta";
 import SiteFooter from "@/components/SiteFooter";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import type { SizeOption } from "@/components/SizeSelector";
+import { getSizes, sizeLabel, sizeName } from "@/lib/sizes";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [settings, mainProducts, reviewStats, reviews, reviewPhotos] = await Promise.all([
+  const [settings, mainProducts, reviewStats, reviews, reviewPhotos, proofs] = await Promise.all([
     getSettings(),
-    db.product.findMany({ where: { type: "MAIN", active: true }, orderBy: { sortOrder: "asc" } }),
+    getSizes(),
     getPublishedReviewStats(),
     getPublishedReviews(),
     getPublishedReviewPhotos(),
+    db.socialProof.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }], take: 30 }),
   ]);
 
   if (mainProducts.length === 0) {
@@ -42,8 +45,8 @@ export default async function HomePage() {
 
   const sizes: SizeOption[] = mainProducts.map((p) => ({
     slug: p.slug,
-    label: p.shortPitch?.trim() || p.name,
-    name: p.name,
+    label: sizeLabel(p),
+    name: sizeName(sizeLabel(p)),
     priceCents: p.priceCents,
     compareAtCents: p.compareAtCents,
     image: p.images[0] ?? null,
@@ -78,14 +81,15 @@ export default async function HomePage() {
   return (
     <main className="pb-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <Snowfall />
       <ViewContentTracker productId={defaultProduct.id} productName={defaultProduct.name} priceCents={defaultProduct.priceCents} />
       <SiteHeader storeName={settings.store_name} shippingDays={settings.shipping_days} deadline={deadline} />
       <Hero sizes={sizes} defaultSlug={defaultProduct.slug} reviewStats={reviewStats} />
-      <DemoVideo videoUrl={settings.demo_video_url} />
       <ProblemSection />
-      <HowItWorksSection />
-      <WhatsInTheBox />
+      <HowItWorksSection mediaUrl={settings.demo_video_url || undefined} />
+      <WhatsInTheBox items={settings.box_items} imageUrl={settings.box_image_url || null} />
       <ProductGallery images={allImages} />
+      <SocialProof items={proofs.map((p) => ({ id: p.id, mediaType: p.mediaType, url: p.url, caption: p.caption, name: p.name, city: p.city }))} />
       <Comparison />
       <Reviews reviews={reviews} stats={reviewStats} />
       <CustomerPhotos
@@ -110,7 +114,7 @@ export default async function HomePage() {
         howTo={settings.guarantee_how_to || undefined}
       />
       <TrustSection />
-      <Faq shippingDays={settings.shipping_days || "3 a 5"} />
+      <Faq shippingDays={settings.shipping_days || "3 a 5"} sizes={sizes.map((s) => s.label)} />
       <FinalCta fromPriceCents={fromPriceCents} deadline={deadline} />
       <SiteFooter settings={settings} />
       <StickyCta fromPriceCents={fromPriceCents} />

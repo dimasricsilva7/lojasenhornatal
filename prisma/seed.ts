@@ -19,12 +19,14 @@ type Seed = {
   orderBumpHeadline?: string;
   upsellEnabled?: boolean;
   upsellHeadline?: string;
+  forceType?: boolean; // produto que já existia com outro tipo: corrige o tipo sem mexer no resto
 };
 
 const PRODUCTS: Seed[] = [
-  // Tamanhos (MAIN). shortPitch = rótulo do tamanho exibido no seletor.
-  { slug: "arvore-120", name: "Árvore de Natal Montada 1,20 m", type: "MAIN", priceCents: 6700, sortOrder: 0, shortPitch: "1,20 m", description: DESC },
-  { slug: "arvore-200", name: "Árvore de Natal Montada 2,00 m", type: "MAIN", priceCents: 9700, sortOrder: 1, shortPitch: "2,00 m", featured: true, description: DESC },
+  // Tamanhos (MAIN), do menor para o maior. shortPitch = rótulo do tamanho (editável no admin).
+  // Os slugs são só identificadores internos; o tamanho exibido vem sempre do rótulo.
+  { slug: "arvore-120", name: "Árvore de Natal Montada 1,50 m", type: "MAIN", priceCents: 6700, sortOrder: 0, shortPitch: "1,50 m", description: DESC },
+  { slug: "arvore-200", name: "Árvore de Natal Montada 1,80 m", type: "MAIN", priceCents: 9700, sortOrder: 1, shortPitch: "1,80 m", featured: true, description: DESC },
   { slug: "arvore-220", name: "Árvore de Natal Montada 2,20 m", type: "MAIN", priceCents: 11700, sortOrder: 2, shortPitch: "2,20 m", description: DESC },
 
   // Order bumps. Só 2 ligados por padrão (mais opções = mais indecisão); os outros ficam prontos no admin.
@@ -35,11 +37,15 @@ const PRODUCTS: Seed[] = [
   { slug: "caixas-presente-decorativas", name: "Kit de Caixas de Presente Decorativas", type: "ORDER_BUMP", priceCents: 3990, sortOrder: 4, orderBumpHeadline: "Monte o cenário completo com caixas de presente decorativas aos pés da árvore." },
   { slug: "pisca-branco-3m", name: "Pisca-pisca Branco 3 m", type: "ORDER_BUMP", priceCents: 3490, sortOrder: 5, orderBumpHeadline: "Mais luz: adicione um pisca-pisca branco de 3 m." },
 
-  // Upsell (1 ativo por vez — o primeiro ativo pela ordem é o exibido).
-  { slug: "kit-natal-completo-premium", name: "Kit Natal Completo Premium", type: "UPSELL", priceCents: 6700, sortOrder: 0, upsellEnabled: true, upsellHeadline: "Seu pedido foi confirmado! Antes de fechar: complete a decoração com o Kit Natal Completo Premium e ele vai junto no mesmo envio." },
-  { slug: "kit-decoracao-luxo", name: "Kit Decoração Natalina Luxo", type: "UPSELL", priceCents: 4700, sortOrder: 1, upsellHeadline: "Seu pedido foi confirmado! Leve também o Kit Decoração Natalina Luxo no mesmo envio." },
-  { slug: "kit-essencial-enfeites", name: "Kit Essencial de Enfeites", type: "UPSELL", priceCents: 2990, sortOrder: 2, upsellHeadline: "Seu pedido foi confirmado! Que tal o Kit Essencial de Enfeites no mesmo envio?" },
-  { slug: "pisca-led-especial", name: "Pisca-pisca LED Especial", type: "UPSELL", priceCents: 1990, sortOrder: 3, upsellHeadline: "Seu pedido foi confirmado! Adicione o Pisca-pisca LED Especial no mesmo envio." },
+  // Upsells: TODOS os ativos são mostrados em sequência, na ordem; depois vêm os downsells.
+  { slug: "kit-natal-completo-premium", name: "Kit Natal Completo Premium", type: "UPSELL", priceCents: 6700, sortOrder: 0, upsellEnabled: true, upsellHeadline: "Antes de fechar: complete a decoração com o Kit Natal Completo Premium. Ele vai junto no mesmo envio." },
+  { slug: "kit-decoracao-luxo", name: "Kit Decoração Natalina Luxo", type: "UPSELL", priceCents: 4700, sortOrder: 1, upsellEnabled: true, upsellHeadline: "Leve também o Kit Decoração Natalina Luxo no mesmo envio." },
+  // Upgrade para o MAIOR tamanho; não aparece para quem já comprou o maior. {maior}/{atual} viram os tamanhos reais.
+  { slug: "upgrade-arvore-maior", name: "Upgrade para a árvore de {maior}", type: "UPSELL", priceCents: 6700, sortOrder: 2, upsellEnabled: true, upsellHeadline: "Que tal uma árvore maior? Troque a sua de {atual} pela de {maior}. Ela vai no lugar da sua, no mesmo envio." },
+
+  // Downsells: mostrados em sequência depois dos upsells.
+  { slug: "kit-essencial-enfeites", name: "Kit Essencial de Enfeites", type: "DOWNSELL", priceCents: 2990, sortOrder: 0, upsellEnabled: true, forceType: true, upsellHeadline: "Que tal o Kit Essencial de Enfeites, por um valor menor, no mesmo envio?" },
+  { slug: "pisca-led-especial", name: "Pisca-pisca LED Especial", type: "DOWNSELL", priceCents: 1990, sortOrder: 1, upsellEnabled: true, forceType: true, upsellHeadline: "Última chance: leve o Pisca-pisca LED Especial no mesmo envio, com valor especial." },
 ];
 
 async function main() {
@@ -61,7 +67,7 @@ async function main() {
     // update: {} — rodar o seed de novo nunca sobrescreve o que foi editado no admin.
     await db.product.upsert({
       where: { slug: p.slug },
-      update: {},
+      update: p.forceType ? { type: p.type } : {},
       create: {
         slug: p.slug,
         name: p.name,
@@ -78,7 +84,7 @@ async function main() {
         orderBumpPriceCents: p.type === "ORDER_BUMP" ? p.priceCents : null,
         orderBumpHeadline: p.orderBumpHeadline ?? null,
         upsellEnabled: p.upsellEnabled ?? false,
-        upsellPriceCents: p.type === "UPSELL" ? p.priceCents : null,
+        upsellPriceCents: p.type === "UPSELL" || p.type === "DOWNSELL" ? p.priceCents : null,
         upsellHeadline: p.upsellHeadline ?? null,
       },
     });

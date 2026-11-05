@@ -30,8 +30,8 @@ export default function Hero({
             Sua árvore de Natal pronta em minutos: já vem montada, com pisca-pisca e enfeites.
           </h1>
           <p className="mt-4 max-w-lg text-base text-graphite-700 sm:text-lg">
-            Nada de passar a tarde abrindo galho, desembaraçando fio e correndo atrás de enfeite. Tira da caixa, abre os
-            galhos e liga na tomada.
+            Nada de passar a tarde abrindo galho, desembaraçando fio e correndo atrás de enfeite. Ela vem achatada na caixa,
+            já decorada: você encaixa o mastro, puxa a árvore para cima e liga na tomada.
           </p>
 
           {reviewStats.count > 0 && (

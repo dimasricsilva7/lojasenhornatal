@@ -12,7 +12,19 @@ const POLL_SCHEDULE = [0, 3000, 6000, 10000, 15000, 20000, 30000, 45000, 60000];
 type Product = { id: string; name: string; image: string; compareAtCents: number; priceCents: number; headline: string };
 type PixState = { orderId: string; status: string; totalCents: number; pixCopyPaste: string | null; pixExpiresAt: string | null };
 
-export default function UpsellClient({ parentOrderId, product }: { parentOrderId: string; product: Product }) {
+export default function UpsellClient({
+  parentOrderId,
+  product,
+  nextHref,
+  eyebrow,
+  step,
+}: {
+  parentOrderId: string;
+  product: Product;
+  nextHref: string;
+  eyebrow?: string;
+  step?: { current: number; total: number };
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,8 +90,8 @@ export default function UpsellClient({ parentOrderId, product }: { parentOrderId
   }, [pix?.orderId, pix?.status]);
 
   useEffect(() => {
-    if (pix?.status === "PAID") router.push(`/pedido/sucesso/${parentOrderId}`);
-  }, [pix?.status, parentOrderId, router]);
+    if (pix?.status === "PAID") router.push(nextHref);
+  }, [pix?.status, nextHref, router]);
 
   function copyPix() {
     if (!pix?.pixCopyPaste) return;
@@ -93,6 +105,12 @@ export default function UpsellClient({ parentOrderId, product }: { parentOrderId
     <main className="min-h-screen bg-cream-50 py-14">
       <div className="container-app max-w-md">
         <div className="rounded-xl2 bg-white p-7 text-center shadow-soft">
+          {step && step.total > 1 && (
+            <p className="mb-2 text-xs font-semibold text-graphite-800/50">
+              Oferta {step.current} de {step.total}
+            </p>
+          )}
+          {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}
           <h1 className="text-xl font-extrabold text-graphite-950">{product.headline}</h1>
 
           {!pix && (
@@ -102,7 +120,9 @@ export default function UpsellClient({ parentOrderId, product }: { parentOrderId
               </div>
               <p className="mt-4 font-medium text-graphite-950">{product.name}</p>
               <div className="mt-2 flex items-baseline justify-center gap-2">
-                <span className="text-graphite-900/40 line-through">{formatBRL(product.compareAtCents)}</span>
+                {product.compareAtCents > product.priceCents && (
+                  <span className="text-graphite-900/40 line-through">{formatBRL(product.compareAtCents)}</span>
+                )}
                 <span className="text-2xl font-extrabold text-graphite-950">{formatBRL(product.priceCents)}</span>
               </div>
 
@@ -112,7 +132,8 @@ export default function UpsellClient({ parentOrderId, product }: { parentOrderId
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {loading ? "Gerando PIX..." : "SIM, QUERO APROVEITAR"}
               </button>
-              <button onClick={() => router.push(`/pedido/sucesso/${parentOrderId}`)} className="btn-secondary mt-3 w-full">
+              <p className="mt-3 text-xs text-graphite-800/60">Vai junto no mesmo envio, sem frete extra. O seu pedido já está confirmado.</p>
+              <button onClick={() => router.push(nextHref)} className="mt-4 w-full text-sm text-graphite-800/60 underline underline-offset-2">
                 Não, obrigado
               </button>
             </>

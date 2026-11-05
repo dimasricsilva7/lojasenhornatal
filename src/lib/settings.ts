@@ -31,6 +31,10 @@ export const DEFAULT_SETTINGS = {
   policy_exchange: "",
   policy_delivery: "",
   demo_video_url: "",
+  // Itens de "O que vem na caixa", um por linha (vazio = lista padrão).
+  box_items: "",
+  // Foto opcional dos itens da caixa (link).
+  box_image_url: "",
 };
 
 export type SettingsMap = Record<string, string> & typeof DEFAULT_SETTINGS;
