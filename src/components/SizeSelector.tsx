@@ -16,15 +16,25 @@ export type SizeOption = {
   featured: boolean;
 };
 
-export default function SizeSelector({ sizes, defaultSlug }: { sizes: SizeOption[]; defaultSlug: string }) {
+export default function SizeSelector({
+  sizes,
+  defaultSlug,
+  showMobileImage = true,
+}: {
+  sizes: SizeOption[];
+  defaultSlug: string;
+  showMobileImage?: boolean;
+}) {
   const [slug, setSlug] = useState(defaultSlug);
   const selected = sizes.find((s) => s.slug === slug) ?? sizes[0];
 
   return (
     <div id="tamanhos" className="scroll-mt-24">
-      <div className="lg:hidden">
-        <ProductImage src={selected.image} alt={selected.name} priority />
-      </div>
+      {showMobileImage && (
+        <div className="lg:hidden">
+          <ProductImage src={selected.image} alt={selected.name} priority />
+        </div>
+      )}
 
       <p className="mt-6 text-sm font-bold text-white lg:mt-0">Escolha o tamanho:</p>
       <div className="mt-3 grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Tamanho da árvore">

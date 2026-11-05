@@ -31,7 +31,6 @@ const GROUPS: { title: string; fields: Field[] }[] = [
     fields: [
       { key: "box_items", label: "O que vem na caixa (um item por linha)", textarea: true, hint: "Vazio = lista padrão (árvore decorada, mastro, pisca-pisca, Papais Noéis, caixinhas de presente, pinhas, bolas, laços e flores)." },
       { key: "box_image_url", label: "Foto dos itens da caixa (link, opcional)" },
-      { key: "demo_video_url", label: "Link do vídeo/GIF de montagem (ou envie o arquivo acima)", hint: "Aparece ao lado do passo a passo \"Como montar\". Vídeo MP4/WEBM em pé (9:16) ou GIF." },
       { key: "spec_material", label: "Material" },
       { key: "spec_dimensions", label: "Dimensões" },
       { key: "spec_weight", label: "Peso" },
@@ -139,6 +138,18 @@ export default function SettingsClient() {
           </label>
           {videoError && <p className="mt-2 text-xs text-red-600">{videoError}</p>}
         </div>
+
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-graphite-800/70">Ou cole o link de um vídeo/GIF</span>
+          <input
+            value={settings.demo_video_url ?? ""}
+            onChange={(e) => setSettings((s) => ({ ...s, demo_video_url: e.target.value }))}
+            placeholder="https://..."
+            className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
+          />
+          <span className="mt-1 block text-xs text-graphite-800/50">MP4/WEBM em pé (9:16) ou GIF. Use isto se o envio do arquivo não funcionar.</span>
+        </label>
+
         <p className="text-xs text-graphite-800/50">
           Depois de enviar, clique em &quot;Salvar configurações&quot; no fim da página para publicar.
         </p>
