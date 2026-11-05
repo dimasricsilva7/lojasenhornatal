@@ -19,7 +19,7 @@ export default function ProductCards({ products }: { products: ProductCard[] }) 
     <section id="produtos" className="section scroll-mt-20 bg-sage-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
-          <p className="eyebrow mb-4 text-white/80">Escolha o seu tamanho</p>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">Escolha o seu tamanho</p>
           <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
             Qual árvore combina com a sua casa?
           </h2>

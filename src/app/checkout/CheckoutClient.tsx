@@ -334,53 +334,45 @@ export default function CheckoutClient({
       </header>
 
       <div className="container-app max-w-5xl pt-5 sm:pt-8">
-        {/* O que o cliente está comprando, logo no topo */}
-        <section className="mb-5 overflow-hidden rounded-xl2 bg-white shadow-lift ring-1 ring-graphite-950/[0.05]">
-          <div className="grid sm:grid-cols-[240px_1fr]">
-            <div className="relative aspect-[16/10] bg-cream-100 sm:aspect-auto sm:min-h-[240px]">
-              <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 100vw, 240px" className="object-cover" priority />
+        {/* O que o cliente está comprando — faixa compacta, só pra ele saber o que é */}
+        <section className="mb-5 rounded-xl2 bg-white p-3.5 shadow-sm ring-1 ring-graphite-950/[0.05] sm:p-4">
+          <div className="flex items-center gap-3.5">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-cream-100 sm:h-20 sm:w-20">
+              <Image src={product.image} alt={product.name} fill sizes="80px" className="object-contain" priority />
             </div>
-            <div className="p-4 sm:p-6">
-              <p className="eyebrow">Você está comprando</p>
-              <h1 className="mt-1 text-xl font-extrabold leading-tight text-graphite-950 sm:text-2xl">{product.name}</h1>
-              <ul className="mt-3 space-y-1.5 text-sm text-graphite-800">
-                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Já vem decorada, com pisca-pisca e enfeites</li>
-                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Monta em minutos: encaixa o mastro, puxa e liga</li>
-                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-sage-600" strokeWidth={3} /> Bivolt · Frete grátis · Entrega em {shippingDays} dias úteis</li>
-              </ul>
-              <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  {product.compareAtCents && product.compareAtCents > product.priceCents && (
-                    <span className="mr-2 text-sm text-graphite-700/40 line-through">{formatBRL(product.compareAtCents)}</span>
-                  )}
-                  <span className="text-3xl font-extrabold tracking-tight text-graphite-950">{formatBRL(product.priceCents)}</span>
-                  <span className="ml-1 text-xs text-graphite-700/70">no PIX</span>
-                </div>
-                {sizes.length > 1 && (
-                  <div>
-                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-graphite-700/60">Tamanho</p>
-                    <div className="flex gap-1.5">
-                      {sizes.map((sz) => (
-                        <Link
-                          key={sz.slug}
-                          href={`/checkout?tamanho=${sz.slug}`}
-                          replace
-                          scroll={false}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
-                            sz.slug === product.slug
-                              ? "border-sage-600 bg-sage-600 text-white"
-                              : "border-graphite-900/15 bg-white text-graphite-800 hover:border-sage-500"
-                          }`}
-                        >
-                          {sz.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-graphite-700/55">Você está comprando</p>
+              <h1 className="truncate text-base font-extrabold leading-tight text-graphite-950 sm:text-lg">{product.name}</h1>
+              <div className="mt-0.5 flex items-baseline gap-1.5">
+                {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                  <span className="text-xs text-graphite-700/40 line-through">{formatBRL(product.compareAtCents)}</span>
                 )}
+                <span className="text-lg font-extrabold tracking-tight text-graphite-950 sm:text-xl">{formatBRL(product.priceCents)}</span>
+                <span className="text-[11px] text-graphite-700/70">no PIX · frete grátis</span>
               </div>
+              <p className="mt-0.5 truncate text-[11px] text-graphite-700/60">Já decorada · Entrega em {shippingDays} dias úteis</p>
             </div>
           </div>
+          {sizes.length > 1 && (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-graphite-900/[0.07] pt-3">
+              <span className="mr-0.5 text-[11px] font-semibold uppercase tracking-wide text-graphite-700/55">Tamanho:</span>
+              {sizes.map((sz) => (
+                <Link
+                  key={sz.slug}
+                  href={`/checkout?tamanho=${sz.slug}`}
+                  replace
+                  scroll={false}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-colors ${
+                    sz.slug === product.slug
+                      ? "border-sage-600 bg-sage-600 text-white"
+                      : "border-graphite-900/15 bg-white text-graphite-800 hover:border-sage-500"
+                  }`}
+                >
+                  {sz.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Selos de confiança logo abaixo do item — reforço antes de preencher os dados */}
