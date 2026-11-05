@@ -26,7 +26,7 @@ export default function SizeSelector({ sizes, defaultSlug }: { sizes: SizeOption
         <ProductImage src={selected.image} alt={selected.name} priority />
       </div>
 
-      <p className="mt-6 text-sm font-bold text-graphite-950 lg:mt-0">Escolha o tamanho:</p>
+      <p className="mt-6 text-sm font-bold text-white lg:mt-0">Escolha o tamanho:</p>
       <div className="mt-3 grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Tamanho da árvore">
         {sizes.map((s) => {
           const active = s.slug === selected.slug;
@@ -42,7 +42,7 @@ export default function SizeSelector({ sizes, defaultSlug }: { sizes: SizeOption
               }`}
             >
               {s.featured && (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-sage-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
                   Mais escolhida
                 </span>
               )}
@@ -56,17 +56,17 @@ export default function SizeSelector({ sizes, defaultSlug }: { sizes: SizeOption
 
       <div className="mt-5 flex flex-wrap items-baseline gap-3">
         {selected.compareAtCents && selected.compareAtCents > selected.priceCents && (
-          <span className="text-base text-graphite-900/40 line-through">{formatBRL(selected.compareAtCents)}</span>
+          <span className="text-base text-white/50 line-through">{formatBRL(selected.compareAtCents)}</span>
         )}
-        <span className="text-4xl font-extrabold tracking-tight text-graphite-950 sm:text-5xl">
+        <span className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
           {formatBRL(selected.priceCents)}
         </span>
       </div>
-      <p className="mt-1 text-sm text-graphite-700/80">
+      <p className="mt-1 text-sm text-white/80">
         Árvore de {selected.label} já montada, com pisca-pisca e enfeites · à vista no PIX · frete grátis
       </p>
 
-      <Link href={`/checkout?tamanho=${selected.slug}`} className="btn-primary mt-5 w-full text-base sm:w-auto sm:px-12">
+      <Link href={`/checkout?tamanho=${selected.slug}`} className="btn-green mt-5 w-full text-base sm:w-auto sm:px-12">
         QUERO MINHA ÁRVORE DE {selected.label}
       </Link>
     </div>

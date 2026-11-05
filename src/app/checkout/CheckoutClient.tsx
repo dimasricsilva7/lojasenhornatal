@@ -5,10 +5,22 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
-import { Check, Copy, Loader2, ShieldCheck, Lock, User, MapPin, ShoppingBag, FileText, Sparkles } from "lucide-react";
+import { Check, Copy, Loader2, ShieldCheck, Lock, User, MapPin, ShoppingBag, FileText, Sparkles, Truck, BadgeCheck, QrCode } from "lucide-react";
 import { formatBRL } from "@/lib/pricing";
 import { trackPixel } from "@/components/MetaPixel";
 import { readAttribution } from "@/components/TrackingCapture";
+
+// Máscaras (o servidor já remove não-dígitos; aqui é só UX).
+const maskCPF = (v: string) =>
+  v.replace(/\D/g, "").slice(0, 11)
+    .replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+const maskPhone = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  return d.length <= 10
+    ? d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2")
+    : d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+};
+const maskCEP = (v: string) => v.replace(/\D/g, "").slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
 
 type OrderBump = {
   id: string;
@@ -53,6 +65,7 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [cepLoading, setCepLoading] = useState(false);
 
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
   const purchaseEventId = useMemo(() => crypto.randomUUID(), []);
@@ -90,6 +103,7 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
   async function handleCepBlur() {
     const digits = form.zip.replace(/\D/g, "");
     if (digits.length !== 8) return;
+    setCepLoading(true);
     try {
       const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
       const data = await res.json();
@@ -104,6 +118,8 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
       }
     } catch {
       // preenchimento automático é best-effort — usuário pode digitar manualmente
+    } finally {
+      setCepLoading(false);
     }
   }
 
@@ -247,7 +263,7 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
                     </p>
                   )}
 
-                  <button onClick={copyPix} className="btn-primary mt-6 w-full">
+                  <button onClick={copyPix} className="btn-green mt-6 w-full">
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     {copied ? "Código copiado!" : "COPIAR CÓDIGO PIX"}
                   </button>
@@ -293,6 +309,20 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
           <span className="font-medium text-graphite-950">Finalizar pedido</span>
         </div>
 
+        <div className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          {[
+            { icon: Lock, label: "Pagamento criptografado" },
+            { icon: Truck, label: "Frete grátis p/ todo o Brasil" },
+            { icon: BadgeCheck, label: "Garantia de 7 dias" },
+            { icon: QrCode, label: "Aprovação na hora no PIX" },
+          ].map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-2 rounded-xl border border-graphite-900/[0.06] bg-white px-3 py-2.5 shadow-card">
+              <Icon className="h-4 w-4 shrink-0 text-sage-600" strokeWidth={2} />
+              <span className="text-[11px] font-semibold leading-tight text-graphite-800 sm:text-xs">{label}</span>
+            </div>
+          ))}
+        </div>
+
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl2 bg-sage-50 px-4 py-3 text-sm text-graphite-800 ring-1 ring-sage-200">
           <span>Você escolheu: <strong className="text-graphite-950">{product.name}</strong></span>
           <Link href="/#tamanhos" className="font-semibold text-sage-700 underline underline-offset-2">Trocar tamanho</Link>
@@ -303,14 +333,14 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
             <SectionCard icon={User} step={1} title="Seus dados">
               <Input label="Nome completo" value={form.name} onChange={(v) => updateField("name", v)} required />
               <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
-                <Input label="CPF" value={form.cpf} onChange={(v) => updateField("cpf", v)} required placeholder="000.000.000-00" />
-                <Input label="Telefone" value={form.phone} onChange={(v) => updateField("phone", v)} required placeholder="(00) 00000-0000" />
+                <Input label="CPF" value={form.cpf} onChange={(v) => updateField("cpf", maskCPF(v))} required placeholder="000.000.000-00" inputMode="numeric" />
+                <Input label="Telefone" value={form.phone} onChange={(v) => updateField("phone", maskPhone(v))} required placeholder="(00) 00000-0000" inputMode="tel" />
               </div>
               <Input label="E-mail" type="email" value={form.email} onChange={(v) => updateField("email", v)} required />
             </SectionCard>
 
             <SectionCard icon={MapPin} step={2} title="Endereço de entrega">
-              <Input label="CEP" value={form.zip} onChange={(v) => updateField("zip", v)} onBlur={handleCepBlur} required placeholder="00000-000" />
+              <Input label="CEP" value={form.zip} onChange={(v) => updateField("zip", maskCEP(v))} onBlur={handleCepBlur} required placeholder="00000-000" inputMode="numeric" loading={cepLoading} hint="Preenchemos o endereço automaticamente" />
               <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-[minmax(0,1fr)_120px]">
                 <Input label="Endereço" value={form.address} onChange={(v) => updateField("address", v)} required />
                 <Input label="Número" value={form.number} onChange={(v) => updateField("number", v)} required />
@@ -391,14 +421,16 @@ export default function CheckoutClient({ product, orderBumps }: { product: Produ
                   </div>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn-primary mt-5 w-full">
+                <button type="submit" disabled={submitting} className="btn-green mt-5 w-full">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                   {submitting ? "Gerando PIX..." : "GERAR PIX"}
                 </button>
 
-                <p className="mt-3 flex items-center justify-center gap-2 text-xs text-graphite-700/60">
-                  <ShieldCheck className="h-4 w-4 text-sage-600" /> Compra segura via PIX
-                </p>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-graphite-700/70">
+                  <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-sage-600" /> Compra segura</span>
+                  <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-sage-600" /> Frete grátis</span>
+                  <span className="flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5 text-sage-600" /> Garantia de 7 dias</span>
+                </div>
               </div>
             </div>
           </aside>
@@ -494,24 +526,30 @@ function SectionCard({
 }
 
 function Input({
-  label, value, onChange, onBlur, type = "text", required, placeholder, maxLength,
+  label, value, onChange, onBlur, type = "text", required, placeholder, maxLength, inputMode, loading, hint,
 }: {
   label: string; value: string; onChange: (v: string) => void; onBlur?: () => void;
   type?: string; required?: boolean; placeholder?: string; maxLength?: number;
+  inputMode?: "numeric" | "tel" | "email" | "text"; loading?: boolean; hint?: string;
 }) {
   return (
     <label className="block min-w-0">
       <span className="mb-1 block text-xs font-medium text-graphite-700/80">{label}</span>
-      <input
-        type={type}
-        value={value}
-        required={required}
-        placeholder={placeholder}
-        maxLength={maxLength}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        className="w-full min-w-0 rounded-lg border border-graphite-900/15 bg-cream-50 px-3.5 py-3 text-sm text-graphite-950 outline-none ring-clay-500/30 focus:ring-2"
-      />
+      <div className="relative">
+        <input
+          type={type}
+          value={value}
+          required={required}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          inputMode={inputMode}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          className="w-full min-w-0 rounded-lg border border-graphite-900/15 bg-cream-50 px-3.5 py-3 text-sm text-graphite-950 outline-none transition-shadow ring-sage-500/40 focus:border-sage-500 focus:ring-2"
+        />
+        {loading && <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-sage-600" />}
+      </div>
+      {hint && <span className="mt-1 block text-[11px] text-graphite-700/50">{hint}</span>}
     </label>
   );
 }

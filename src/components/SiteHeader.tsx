@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function SiteHeader({ storeName, shippingDays, deadline }: { storeName: string; shippingDays?: string; deadline?: string }) {
   return (
     <>
-      <div className="bg-clay-600 px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
+      <div className="bg-sage-600 px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
         Frete grátis para todo o Brasil{shippingDays ? ` · Entrega em ${shippingDays} dias úteis` : ""}
         {deadline ? ` · Pedidos até ${deadline} chegam antes do Natal` : ""}
       </div>

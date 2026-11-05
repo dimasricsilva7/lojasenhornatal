@@ -16,14 +16,14 @@ export const DEFAULT_BOX_ITEMS = [
 export function WhatsInTheBox({ items, imageUrl }: { items: string; imageUrl?: string | null }) {
   const list = (items || DEFAULT_BOX_ITEMS).split("\n").map((l) => l.trim()).filter(Boolean);
   return (
-    <section className="section bg-cream-50">
+    <section className="section bg-clay-600">
       <div className="container-app">
         <div className="mx-auto max-w-xl text-center">
-          <p className="eyebrow mb-4">O que vem na caixa</p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">O que vem na caixa</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
             A árvore e toda a decoração, numa caixa só.
           </h2>
-          <p className="mt-3 text-graphite-700">Tudo já vem preso nos galhos. Você não precisa comprar nem pendurar nada.</p>
+          <p className="mt-3 text-white/90">Tudo já vem preso nos galhos. Você não precisa comprar nem pendurar nada.</p>
         </div>
         <div className={`mt-10 grid items-center gap-8 ${imageUrl ? "lg:grid-cols-2" : ""}`}>
           {imageUrl && (
@@ -41,7 +41,7 @@ export function WhatsInTheBox({ items, imageUrl }: { items: string; imageUrl?: s
             ))}
           </ul>
         </div>
-        <p className="mx-auto mt-6 max-w-xl text-center text-xs text-graphite-700/70">
+        <p className="mx-auto mt-6 max-w-xl text-center text-xs text-white/70">
           A quantidade de enfeites varia conforme o tamanho (a partir de 50). Bivolt: 110 V e 220 V.
         </p>
       </div>
@@ -101,11 +101,11 @@ const FOR_WHOM = [
 
 export default function Benefits() {
   return (
-    <section className="section bg-cream-50">
+    <section className="section bg-sage-600">
       <div className="container-app max-w-3xl">
         <div className="mx-auto max-w-xl text-center">
-          <p className="eyebrow mb-4">Para quem é</p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">Feita para quem quer o Natal sem trabalho.</h2>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">Para quem é</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Feita para quem quer o Natal sem trabalho.</h2>
         </div>
         <ul className="mt-8 space-y-3">
           {FOR_WHOM.map((t) => (

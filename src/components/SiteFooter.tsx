@@ -14,8 +14,8 @@ function whatsappHref(raw: string) {
 
 export default function SiteFooter({ settings }: { settings: FooterSettings }) {
   return (
-    <footer className="border-t border-graphite-900/10 bg-cream-50 py-12">
-      <div className="container-app flex flex-col items-center gap-4 text-center text-sm text-graphite-700">
+    <footer className="bg-clay-700 py-12">
+      <div className="container-app flex flex-col items-center gap-4 text-center text-sm text-white/90">
         <Image src="/images/logo.png" alt={settings.store_name} width={900} height={292} className="h-14 w-auto" />
         <p>Frete grátis · Pagamento via PIX · Entrega em {settings.shipping_days || "3 a 5"} dias úteis</p>
 
@@ -41,10 +41,10 @@ export default function SiteFooter({ settings }: { settings: FooterSettings }) {
         </nav>
 
         {settings.company_info && (
-          <p className="max-w-md whitespace-pre-line text-xs text-graphite-700/70">{settings.company_info}</p>
+          <p className="max-w-md whitespace-pre-line text-xs text-white/70">{settings.company_info}</p>
         )}
 
-        <p className="mt-2 text-xs text-graphite-700/50">
+        <p className="mt-2 text-xs text-white/60">
           © {new Date().getFullYear()} {settings.store_name}. Todos os direitos reservados.
         </p>
       </div>

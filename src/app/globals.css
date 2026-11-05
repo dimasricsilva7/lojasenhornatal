@@ -28,6 +28,10 @@ body {
   @apply inline-flex items-center justify-center gap-2 rounded-full bg-clay-600 px-7 py-4 text-sm font-bold tracking-wide text-white shadow-soft transition-all duration-150 hover:scale-[1.02] hover:bg-clay-700 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
 }
 
+.btn-green {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-sage-600 px-7 py-4 text-sm font-bold tracking-wide text-white shadow-soft transition-all duration-150 hover:scale-[1.02] hover:bg-sage-700 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+}
+
 .btn-secondary {
   @apply inline-flex items-center justify-center gap-2 rounded-full border border-graphite-900/15 bg-white px-6 py-3.5 text-sm font-semibold text-graphite-900 transition-colors hover:bg-cream-100 active:scale-[0.98];
 }
