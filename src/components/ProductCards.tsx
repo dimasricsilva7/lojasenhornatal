@@ -1,0 +1,73 @@
+import Link from "next/link";
+import Image from "next/image";
+import { TreePine } from "lucide-react";
+import { formatBRL } from "@/lib/pricing";
+
+export type ProductCard = {
+  slug: string;
+  name: string;
+  label: string;
+  description: string | null;
+  priceCents: number;
+  compareAtCents: number | null;
+  image: string | null;
+  featured: boolean;
+};
+
+export default function ProductCards({ products }: { products: ProductCard[] }) {
+  return (
+    <section id="produtos" className="section scroll-mt-20 bg-cream-50">
+      <div className="container-app">
+        <div className="mx-auto max-w-xl text-center">
+          <p className="eyebrow mb-4">Escolha o seu tamanho</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+            Qual árvore combina com a sua casa?
+          </h2>
+          <p className="mt-3 text-graphite-700">
+            Todas já vêm montadas, com pisca-pisca e enfeites. Frete grátis para todo o Brasil.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-10 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((p) => (
+            <div key={p.slug} className="card-surface flex flex-col overflow-hidden transition-shadow hover:shadow-lift">
+              <div className="relative aspect-square bg-cream-100">
+                {p.featured && (
+                  <span className="absolute left-3 top-3 z-10 rounded-full bg-sage-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                    Mais escolhida
+                  </span>
+                )}
+                {p.image ? (
+                  <Image src={p.image} alt={p.name} fill sizes="(max-width: 768px) 90vw, 360px" className="object-cover" />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-sage-50 text-sage-600">
+                    <TreePine className="h-16 w-16" strokeWidth={1.25} />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-sage-700/70">Foto do produto</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="text-lg font-extrabold text-graphite-950">{p.name}</h3>
+                {p.description && (
+                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-graphite-700/85">{p.description}</p>
+                )}
+
+                <div className="mt-4 flex items-baseline gap-2">
+                  {p.compareAtCents && p.compareAtCents > p.priceCents && (
+                    <span className="text-sm text-graphite-700/40 line-through">{formatBRL(p.compareAtCents)}</span>
+                  )}
+                  <span className="text-2xl font-extrabold tracking-tight text-graphite-950">{formatBRL(p.priceCents)}</span>
+                </div>
+
+                <Link href={`/checkout?tamanho=${p.slug}`} className="btn-green mt-5 w-full">
+                  COMPRAR {p.label}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

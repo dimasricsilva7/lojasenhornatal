@@ -13,7 +13,7 @@ export default function SiteHeader({ storeName, shippingDays, deadline }: { stor
           <Link href="/" className="flex items-center" aria-label={storeName}>
             <Image src="/images/logo.png" alt={storeName} width={900} height={292} priority className="h-11 w-auto sm:h-12" />
           </Link>
-          <Link href="/#tamanhos" className="btn-primary px-5 py-2.5 text-xs">
+          <Link href="/#produtos" className="btn-primary px-5 py-2.5 text-xs">
             Comprar
           </Link>
         </div>

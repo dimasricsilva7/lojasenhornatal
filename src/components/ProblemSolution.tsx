@@ -9,23 +9,23 @@ const PAINS = [
 
 export function ProblemSection() {
   return (
-    <section className="section bg-white">
+    <section className="section bg-sage-600">
       <div className="container-app max-w-3xl">
-        <p className="eyebrow mb-4 text-center">Todo ano a mesma coisa</p>
-        <h2 className="text-center text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+        <p className="mb-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-white/80">Todo ano a mesma coisa</p>
+        <h2 className="text-center text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
           Montar a árvore não precisava ser a parte mais cansativa do Natal.
         </h2>
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {PAINS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex gap-4 rounded-xl2 bg-cream-50 p-5 ring-1 ring-graphite-950/[0.04]">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-clay-50 text-clay-600">
+            <li key={text} className="flex gap-4 rounded-xl2 bg-white/10 p-5 ring-1 ring-white/15">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white">
                 <Icon className="h-5 w-5" strokeWidth={1.75} />
               </span>
-              <p className="text-base text-graphite-800">{text}</p>
+              <p className="text-base text-white/90">{text}</p>
             </li>
           ))}
         </ul>
-        <p className="mx-auto mt-10 max-w-xl text-center text-lg font-semibold text-graphite-950">
+        <p className="mx-auto mt-10 max-w-xl text-center text-lg font-semibold text-white">
           A árvore do Senhor Natal chega pronta. Você só escolhe o canto da sala.
         </p>
       </div>

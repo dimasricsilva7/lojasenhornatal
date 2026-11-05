@@ -8,7 +8,7 @@ export default function StickyCta({ fromPriceCents }: { fromPriceCents: number }
         <p className="text-xs leading-tight text-graphite-700 sm:text-sm">
           A partir de <strong className="block text-base text-graphite-950 sm:inline">{formatBRL(fromPriceCents)}</strong>
         </p>
-        <Link href="/#tamanhos" className="btn-primary flex-1 sm:flex-none sm:px-10">
+        <Link href="/#produtos" className="btn-primary flex-1 sm:flex-none sm:px-10">
           ESCOLHER TAMANHO
         </Link>
       </div>

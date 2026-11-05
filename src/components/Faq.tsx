@@ -22,20 +22,20 @@ const FAQ = (shippingDays: string, sizes: string[]) => [
 
 export default function Faq({ shippingDays = "3 a 5", sizes = [] }: { shippingDays?: string; sizes?: string[] }) {
   return (
-    <section className="section bg-white">
+    <section className="section bg-clay-600">
       <div className="container-app max-w-2xl">
         <div className="text-center">
-          <p className="eyebrow mb-4">Dúvidas frequentes</p>
-          <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">Perguntas que todo mundo faz</h2>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-white/80">Dúvidas frequentes</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Perguntas que todo mundo faz</h2>
         </div>
-        <div className="mt-8 divide-y divide-graphite-950/[0.08] rounded-xl2 bg-cream-50 ring-1 ring-graphite-950/[0.05]">
+        <div className="mt-8 divide-y divide-white/15 rounded-xl2 bg-white/10 ring-1 ring-white/20">
           {FAQ(shippingDays, sizes).map(({ q, a }) => (
             <details key={q} className="group px-5 py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-graphite-950 marker:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-white marker:hidden">
                 {q}
-                <span className="text-xl text-sage-600 transition-transform group-open:rotate-45">+</span>
+                <span className="text-xl text-white transition-transform group-open:rotate-45">+</span>
               </summary>
-              <p className="mt-3 text-base leading-relaxed text-graphite-700">{a}</p>
+              <p className="mt-3 text-base leading-relaxed text-white/85">{a}</p>
             </details>
           ))}
         </div>

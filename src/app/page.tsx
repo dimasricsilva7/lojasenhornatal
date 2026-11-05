@@ -9,6 +9,7 @@ import { ProblemSection, HowItWorksSection } from "@/components/ProblemSolution"
 import ProductGallery from "@/components/ProductGallery";
 import Benefits, { WhatsInTheBox, Comparison } from "@/components/Benefits";
 import Specifications from "@/components/Specifications";
+import ProductCards from "@/components/ProductCards";
 import Reviews from "@/components/Reviews";
 import CustomerPhotos from "@/components/CustomerPhotos";
 import Guarantee from "@/components/Guarantee";
@@ -47,6 +48,16 @@ export default async function HomePage() {
     slug: p.slug,
     label: sizeLabel(p),
     name: sizeName(sizeLabel(p)),
+    priceCents: p.priceCents,
+    compareAtCents: p.compareAtCents,
+    image: p.images[0] ?? null,
+    featured: p.featured,
+  }));
+  const productCards = mainProducts.map((p) => ({
+    slug: p.slug,
+    label: sizeLabel(p),
+    name: sizeName(sizeLabel(p)),
+    description: p.description,
     priceCents: p.priceCents,
     compareAtCents: p.compareAtCents,
     image: p.images[0] ?? null,
@@ -114,6 +125,7 @@ export default async function HomePage() {
         howTo={settings.guarantee_how_to || undefined}
       />
       <TrustSection />
+      <ProductCards products={productCards} />
       <Faq shippingDays={settings.shipping_days || "3 a 5"} sizes={sizes.map((s) => s.label)} />
       <FinalCta fromPriceCents={fromPriceCents} deadline={deadline} />
       <SiteFooter settings={settings} />
