@@ -118,7 +118,7 @@ export default function OnlineNow({ detailed = false }: { detailed?: boolean }) 
           </table>
         </div>
       )}
-      <p className="mt-4 text-[11px] text-graphite-800/40">Conta abas abertas nos últimos 45 segundos e sai da lista assim que a pessoa fecha a aba. Robôs e o próprio admin são ignorados. Nenhum dado pessoal é exibido.</p>
+      <p className="mt-4 text-[11px] text-graphite-800/40">Conta abas abertas nos últimos 10 segundos e sai da lista assim que a pessoa fecha a aba. Robôs e o próprio admin são ignorados. Nenhum dado pessoal é exibido.</p>
     </section>
   );
 }

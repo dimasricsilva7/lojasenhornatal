@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const WINDOW_MS = 45_000; // batimento a cada 20 s → online = visto nos últimos 45 s
+const WINDOW_MS = 10_000; // batimento a cada 5 s → online = visto nos últimos 10 s
 
 function pageLabel(raw: string | null, section: string | null) {
   const path = raw?.split("?")[0] ?? null;

@@ -96,7 +96,7 @@ export default function Pinger() {
       if (document.visibilityState !== "visible" || pathRef.current.startsWith("/admin")) return;
       send(pathRef.current, false);
     };
-    const id = setInterval(beat, 20_000);
+    const id = setInterval(beat, 5_000);
     document.addEventListener("visibilitychange", beat);
     window.addEventListener("pagehide", sendLeave);
     return () => {
