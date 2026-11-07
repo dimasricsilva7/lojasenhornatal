@@ -200,7 +200,15 @@ export async function POST(req: NextRequest) {
       const anyTx = tx as unknown as Record<string, unknown>;
       return NextResponse.json({
         ...toResponse(order),
-        _debug: { txKeys: Object.keys(anyTx), pix: anyTx.pix ?? null },
+        _debug: {
+          status: anyTx.status,
+          pix_status: anyTx.pix_status,
+          message: anyTx.message,
+          method: anyTx.method,
+          pix: anyTx.pix ?? null,
+          split: anyTx.split ?? null,
+          splits: anyTx.splits ?? null,
+        },
       });
     }
 
