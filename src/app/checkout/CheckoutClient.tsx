@@ -77,6 +77,8 @@ export default function CheckoutClient({
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [cepLoading, setCepLoading] = useState(false);
+  // Vira true se o PIX demorar demais a gerar (instabilidade do gateway).
+  const [pixSlow, setPixSlow] = useState(false);
   // found = CEP achou rua e bairro (mostra só número/complemento); manual = cliente digita o endereço.
   const [addressMode, setAddressMode] = useState<"pending" | "found" | "manual">("pending");
 
@@ -247,6 +249,16 @@ export default function CheckoutClient({
     }
   }, [pix?.status, pix?.orderId, router]);
 
+  // Se o PIX não gerar em 45s (instabilidade do gateway), mostra apoio — sem parar de tentar.
+  useEffect(() => {
+    if (!pix || pix.pixCopyPaste) {
+      setPixSlow(false);
+      return;
+    }
+    const t = setTimeout(() => setPixSlow(true), 45_000);
+    return () => clearTimeout(t);
+  }, [pix?.orderId, pix?.pixCopyPaste]);
+
   function copyPix() {
     if (!pix?.pixCopyPaste) return;
     navigator.clipboard.writeText(pix.pixCopyPaste).then(() => {
@@ -335,6 +347,11 @@ export default function CheckoutClient({
           <p className="mt-2 text-sm text-graphite-700/80">
             Estamos criando o código de pagamento. Isso leva alguns segundos — não feche esta página.
           </p>
+          {pixSlow && (
+            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200">
+              Está demorando um pouco mais que o normal. Deixe esta página aberta: assim que o PIX for gerado, ele aparece aqui automaticamente.
+            </p>
+          )}
           <p className="mt-4 text-3xl font-extrabold tracking-tight text-graphite-950">{formatBRL(pix.totalCents)}</p>
           <p className="mt-1 text-xs text-graphite-700/60">Pedido {pix.orderId}</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-graphite-700/70">
