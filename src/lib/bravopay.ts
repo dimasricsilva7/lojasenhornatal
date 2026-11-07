@@ -110,11 +110,23 @@ export async function createPixTransaction(
     },
   };
 
-  return request<BravopayTransaction>("/transactions", {
+  const raw = await request<Record<string, unknown>>("/transactions", {
     method: "POST",
     body: JSON.stringify(body),
     idempotencyKey: input.idempotencyKey,
   });
+  // Alguns PSPs embrulham o recurso em { data: {...} } (como o endpoint de listagem aqui).
+  const unwrapped = !("id" in raw) && raw.data && typeof raw.data === "object" ? (raw.data as Record<string, unknown>) : raw;
+  const tx = unwrapped as unknown as BravopayTransaction & { pix?: Record<string, unknown> };
+  // Diagnóstico: se não veio o copy-paste, registra a FORMA da resposta (sem valores/PII).
+  if (!tx?.pix || !(tx.pix as Record<string, unknown>).copy_paste) {
+    console.error("bravopay_no_copy_paste", {
+      txKeys: tx ? Object.keys(tx) : null,
+      pixKeys: tx?.pix ? Object.keys(tx.pix) : null,
+      status: tx?.status,
+    });
+  }
+  return tx;
 }
 
 export async function findTransactionByExternalReference(
