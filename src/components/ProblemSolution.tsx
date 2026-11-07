@@ -1,5 +1,6 @@
 import { Clock, Unplug, ShoppingBag, TreePine, PackageOpen, Move, Plug } from "lucide-react";
 import { settingLines, settingRows, type SettingsMap } from "@/lib/settings";
+import HowToVideo from "@/components/HowToVideo";
 
 const PAIN_ICONS = [Clock, Unplug, ShoppingBag, TreePine];
 
@@ -40,7 +41,7 @@ function HowToMedia({ url }: { url: string }) {
   return (
     <div className="mx-auto w-full max-w-[340px] overflow-hidden rounded-xl2 bg-graphite-950 shadow-lift ring-1 ring-white/10">
       {isVideo ? (
-        <video src={url} className="aspect-[9/16] h-auto w-full object-cover" muted loop playsInline autoPlay preload="metadata" />
+        <HowToVideo src={url} />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="Montagem da árvore passo a passo" className="aspect-[9/16] h-auto w-full object-cover" />

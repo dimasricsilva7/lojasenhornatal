@@ -33,7 +33,7 @@ function ProofVideo({ src }: { src: string }) {
 
   return (
     <>
-      <video ref={ref} src={src} className="h-full w-full object-cover" muted={muted} loop playsInline preload="metadata" />
+      <video ref={ref} src={src} className="h-full w-full object-cover" muted={muted} loop playsInline preload="none" />
       <button
         type="button"
         onClick={() => setMuted((m) => !m)}
