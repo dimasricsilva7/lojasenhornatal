@@ -115,18 +115,12 @@ export async function createPixTransaction(
     body: JSON.stringify(body),
     idempotencyKey: input.idempotencyKey,
   });
-  // Alguns PSPs embrulham o recurso em { data: {...} } (como o endpoint de listagem aqui).
+  // Alguns PSPs embrulham o recurso em { data: {...} }.
   const unwrapped = !("id" in raw) && raw.data && typeof raw.data === "object" ? (raw.data as Record<string, unknown>) : raw;
-  const tx = unwrapped as unknown as BravopayTransaction & { pix?: Record<string, unknown> };
-  // Diagnóstico: se não veio o copy-paste, registra a FORMA da resposta (sem valores/PII).
-  if (!tx?.pix || !(tx.pix as Record<string, unknown>).copy_paste) {
-    console.error("bravopay_no_copy_paste", {
-      txKeys: tx ? Object.keys(tx) : null,
-      pixKeys: tx?.pix ? Object.keys(tx.pix) : null,
-      status: tx?.status,
-    });
-  }
-  return tx;
+  // O BravoPay gera o PIX de forma assíncrona: na criação, pix.copy_paste vem
+  // null (pix_status "generating"). O código é buscado depois pelo polling de
+  // status (findTransactionByExternalReference → applyTransactionSnapshot).
+  return unwrapped as unknown as BravopayTransaction;
 }
 
 export async function findTransactionByExternalReference(

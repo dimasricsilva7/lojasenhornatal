@@ -209,9 +209,17 @@ export default function CheckoutClient({
         const res = await fetch(`/api/orders/${pix!.orderId}/status`);
         const data = await res.json();
         if (cancelled) return;
-        if (data.status && data.status !== pix!.status) {
-          setPix((prev) => (prev ? { ...prev, status: data.status } : prev));
-        }
+        // O PIX do BravoPay é gerado em ~5-30s: o copy_paste chega por aqui.
+        setPix((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: data.status ?? prev.status,
+                pixCopyPaste: prev.pixCopyPaste ?? data.pixCopyPaste ?? null,
+                pixExpiresAt: prev.pixExpiresAt ?? data.pixExpiresAt ?? null,
+              }
+            : prev
+        );
         if (data.status === "PAID") return; // stop polling
       } catch {
         // tenta de novo no próximo ciclo
@@ -310,6 +318,28 @@ export default function CheckoutClient({
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Pedido criado, mas o BravoPay ainda está gerando o código PIX (~5-30s).
+  // Mostramos uma espera enquanto o polling busca o copy_paste.
+  if (pix && !pix.pixCopyPaste) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-cream-50 p-6">
+        <div className="w-full max-w-sm rounded-xl2 bg-white p-8 text-center shadow-lift ring-1 ring-graphite-950/[0.05]">
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-sage-600" />
+          <h1 className="mt-5 text-lg font-extrabold text-graphite-950">Gerando seu PIX…</h1>
+          <p className="mt-2 text-sm text-graphite-700/80">
+            Estamos criando o código de pagamento. Isso leva alguns segundos — não feche esta página.
+          </p>
+          <p className="mt-4 text-3xl font-extrabold tracking-tight text-graphite-950">{formatBRL(pix.totalCents)}</p>
+          <p className="mt-1 text-xs text-graphite-700/60">Pedido {pix.orderId}</p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-graphite-700/70">
+            <span className="flex items-center gap-1.5"><Lock className="h-3.5 w-3.5 text-sage-600" /> Compra segura</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-sage-600" /> Garantia de 7 dias</span>
           </div>
         </div>
       </main>

@@ -18,6 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { displayId: s
     orderId: synced.displayId,
     status: synced.status,
     totalCents: synced.totalCents,
+    pixCopyPaste: synced.pixCopyPaste,
     pixExpiresAt: synced.pixExpiresAt,
   });
 }

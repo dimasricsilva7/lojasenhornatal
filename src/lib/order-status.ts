@@ -24,6 +24,13 @@ export async function applyTransactionSnapshot(orderId: string, tx: BravopayTran
 
   const nextStatus = STATUS_MAP[tx.status] ?? order.status;
   const wasAlreadyPaid = order.status === "PAID";
+  // O PIX do BravoPay é gerado em ~5-30s depois da criação. Quando o copy_paste
+  // ficar disponível numa sincronização, é aqui que ele é persistido.
+  const pixCode = tx.pix?.copy_paste;
+  const fillPix =
+    pixCode && !order.pixCopyPaste
+      ? { pixCopyPaste: pixCode, pixExpiresAt: tx.pix?.expires_at ? new Date(tx.pix.expires_at) : order.pixExpiresAt }
+      : {};
 
   const updated = await db.order.update({
     where: { id: order.id },
@@ -31,6 +38,7 @@ export async function applyTransactionSnapshot(orderId: string, tx: BravopayTran
       status: nextStatus,
       bravopayTransactionId: tx.id,
       lastCheckedAt: new Date(),
+      ...fillPix,
       paidAt: nextStatus === "PAID" && !order.paidAt ? new Date() : order.paidAt,
     },
   });
