@@ -195,6 +195,15 @@ export async function POST(req: NextRequest) {
       data: { orderId: order.id, eventName: "pix_generated" },
     });
 
+    // DEBUG temporário: se o PIX não veio, devolve a forma da resposta do BravoPay para diagnóstico.
+    if (!tx.pix?.copy_paste) {
+      const anyTx = tx as unknown as Record<string, unknown>;
+      return NextResponse.json({
+        ...toResponse(order),
+        _debug: { txKeys: Object.keys(anyTx), pix: anyTx.pix ?? null },
+      });
+    }
+
   } catch (err) {
     await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
     await db.trackingEvent.create({
