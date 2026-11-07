@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { Prisma, type Order } from "@prisma/client";
-import { findTransactionByExternalReference, type BravopayTransaction } from "@/lib/bravopay";
+import { findTransactionByExternalReference, getTransaction, type BravopayTransaction } from "@/lib/bravopay";
 import { sendMetaCapiEvent } from "@/lib/meta-capi";
 
 const STATUS_MAP: Record<BravopayTransaction["status"], Order["status"]> = {
@@ -121,7 +121,12 @@ export async function syncOrderFromBravopay(order: Order, minIntervalMs = 4000) 
     return order;
   }
 
-  const tx = await findTransactionByExternalReference(order.displayId);
+  // Preferimos GET /transactions/{id}: é por aí que o BravoPay disponibiliza o
+  // pix.copy_paste gerado de forma assíncrona. Caímos na busca por referência
+  // só se ainda não temos o id da transação.
+  const tx = order.bravopayTransactionId
+    ? await getTransaction(order.bravopayTransactionId)
+    : await findTransactionByExternalReference(order.displayId);
   if (!tx) {
     await db.order.update({ where: { id: order.id }, data: { lastCheckedAt: new Date() } });
     return order;

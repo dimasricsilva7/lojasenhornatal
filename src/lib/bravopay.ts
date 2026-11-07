@@ -123,6 +123,13 @@ export async function createPixTransaction(
   return unwrapped as unknown as BravopayTransaction;
 }
 
+/** Busca a transação pelo id. É por aqui que o pix.copy_paste (gerado em ~5-30s) fica disponível. */
+export async function getTransaction(id: string): Promise<BravopayTransaction | null> {
+  const raw = await request<Record<string, unknown>>(`/transactions/${encodeURIComponent(id)}`, { method: "GET" });
+  const unwrapped = !("id" in raw) && raw.data && typeof raw.data === "object" ? (raw.data as Record<string, unknown>) : raw;
+  return (unwrapped as unknown as BravopayTransaction) ?? null;
+}
+
 export async function findTransactionByExternalReference(
   externalReference: string
 ): Promise<BravopayTransaction | null> {
