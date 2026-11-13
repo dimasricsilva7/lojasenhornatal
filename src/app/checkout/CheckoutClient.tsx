@@ -175,6 +175,11 @@ export default function CheckoutClient({
         setSubmitting(false);
         return;
       }
+      if (data.redirectUrl) {
+        // InfinitePay: checkout hospedado (cartão+PIX) em outra página.
+        window.location.href = data.redirectUrl;
+        return;
+      }
       setPix(data);
     } catch {
       setError("Falha de conexão. Verifique sua internet e tente novamente.");

@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
-import { Prisma, type Order } from "@prisma/client";
+import { Prisma, type Order, type Customer } from "@prisma/client";
 import { findTransactionByExternalReference, getTransaction, type BravopayTransaction } from "@/lib/bravopay";
+import { checkPayment } from "@/lib/infinitepay";
 import { sendMetaCapiEvent } from "@/lib/meta-capi";
 
 const STATUS_MAP: Record<BravopayTransaction["status"], Order["status"]> = {
@@ -12,9 +13,84 @@ const STATUS_MAP: Record<BravopayTransaction["status"], Order["status"]> = {
   FAILED: "FAILED",
 };
 
+type OrderWithCustomer = Order & { customer: Customer };
+
+/**
+ * Efeitos colaterais de um pedido que acabou de ser pago, comuns a todos os
+ * gateways: registra o pagamento, recupera o carrinho, grava o evento e envia o
+ * Purchase pela Conversions API do Meta. O pedido JÁ deve ter sido marcado PAID
+ * pelo chamador de forma atômica; `firstTransition` diz se esta é a primeira vez
+ * (só então o Purchase é enviado, uma única vez por pedido principal).
+ */
+export async function recordOrderPaid(
+  order: OrderWithCustomer,
+  firstTransition: boolean,
+  payment: {
+    transactionId: string;
+    statusLabel: string;
+    amountCents: number;
+    netCents?: number | null;
+    feeCents?: number | null;
+    method: string;
+    rawPayload: Prisma.InputJsonValue;
+  }
+) {
+  await db.payment.upsert({
+    where: { bravopayTransactionId: payment.transactionId },
+    update: { status: payment.statusLabel, amountCents: payment.amountCents, netCents: payment.netCents ?? null, feeCents: payment.feeCents ?? null },
+    create: {
+      orderId: order.id,
+      bravopayTransactionId: payment.transactionId,
+      status: payment.statusLabel,
+      amountCents: payment.amountCents,
+      netCents: payment.netCents ?? null,
+      feeCents: payment.feeCents ?? null,
+      method: payment.method,
+      rawPayload: payment.rawPayload,
+    },
+  });
+
+  await db.abandonedCart.updateMany({
+    where: { orderId: order.id },
+    data: { status: "RECOVERED", recoveredAt: new Date() },
+  });
+
+  await db.trackingEvent.create({
+    data: { orderId: order.id, eventName: "purchase", metadata: { transactionId: payment.transactionId } },
+  });
+
+  // Upsell/downsell é complemento do pedido principal: não é uma nova compra
+  // para o Meta. Só o pedido principal envia Purchase (uma única vez).
+  if (firstTransition && !order.isUpsellOrder) {
+    // Compras confirmadas fora da visita original (webhook atrasado, reverify
+    // manual, polling que só rodou depois) não têm cookies de navegador aqui.
+    // Reconstruímos o fbc a partir do fbclid salvo no pedido para que a compra
+    // ainda seja atribuída à campanha/anúncio corretos no Meta Ads.
+    const fbc = order.fbclid ? `fb.1.${order.createdAt.getTime()}.${order.fbclid}` : undefined;
+
+    await sendMetaCapiEvent({
+      eventName: "Purchase",
+      eventId: order.metaEventId ?? `purchase_${order.id}`,
+      eventSourceUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/pedido/sucesso/${order.displayId}`,
+      userData: {
+        email: order.customer.email,
+        phone: order.customer.phone,
+        firstName: order.customer.name.split(" ")[0],
+        fbc,
+      },
+      customData: {
+        value: order.totalCents / 100,
+        currency: "BRL",
+        content_ids: [order.id],
+        order_id: order.displayId,
+      },
+    }).catch(() => {});
+  }
+}
+
 /**
  * Applies a BravoPay transaction snapshot onto our local order. This is the
- * single choke point that can mark an order PAID — called from the webhook
+ * single choke point that can mark a BravoPay order PAID — called from the webhook
  * handler (push) and from the polling / manual reverify paths (pull). Never
  * call `db.order.update({ status: "PAID" })` anywhere else in the codebase.
  */
@@ -44,61 +120,15 @@ export async function applyTransactionSnapshot(orderId: string, tx: BravopayTran
   });
 
   if (nextStatus === "PAID") {
-    await db.payment.upsert({
-      where: { bravopayTransactionId: tx.id },
-      update: { status: tx.status, amountCents: tx.amount_cents, netCents: tx.net_cents, feeCents: tx.fee_cents },
-      create: {
-        orderId: order.id,
-        bravopayTransactionId: tx.id,
-        status: tx.status,
-        amountCents: tx.amount_cents,
-        netCents: tx.net_cents ?? null,
-        feeCents: tx.fee_cents ?? null,
-        method: tx.method,
-        rawPayload: tx as unknown as Prisma.InputJsonValue,
-      },
+    await recordOrderPaid(order, !wasAlreadyPaid, {
+      transactionId: tx.id,
+      statusLabel: tx.status,
+      amountCents: tx.amount_cents,
+      netCents: tx.net_cents,
+      feeCents: tx.fee_cents,
+      method: tx.method,
+      rawPayload: tx as unknown as Prisma.InputJsonValue,
     });
-
-    await db.abandonedCart.updateMany({
-      where: { orderId: order.id },
-      data: { status: "RECOVERED", recoveredAt: new Date() },
-    });
-
-    await db.trackingEvent.create({
-      data: { orderId: order.id, eventName: "purchase", metadata: { transactionId: tx.id } },
-    });
-
-    // Upsell/downsell é complemento do pedido principal: não é uma nova compra
-    // para o Meta. Só o pedido principal envia Purchase (uma única vez).
-    if (!wasAlreadyPaid && !order.isUpsellOrder) {
-      // Compras confirmadas fora da visita original (webhook atrasado, reverify
-      // manual, polling que só rodou depois) não têm cookies de navegador
-      // disponíveis aqui. Reconstruímos o fbc a partir do fbclid salvo no
-      // pedido (mesmo formato que o Pixel usa) para que a compra ainda seja
-      // atribuída à campanha/anúncio corretos no Meta Ads, em vez de cair
-      // como "compra sem origem".
-      const fbc = order.fbclid
-        ? `fb.1.${order.createdAt.getTime()}.${order.fbclid}`
-        : undefined;
-
-      await sendMetaCapiEvent({
-        eventName: "Purchase",
-        eventId: order.metaEventId ?? `purchase_${order.id}`,
-        eventSourceUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/pedido/sucesso/${order.displayId}`,
-        userData: {
-          email: order.customer.email,
-          phone: order.customer.phone,
-          firstName: order.customer.name.split(" ")[0],
-          fbc,
-        },
-        customData: {
-          value: order.totalCents / 100,
-          currency: "BRL",
-          content_ids: [order.id],
-          order_id: order.displayId,
-        },
-      }).catch(() => {});
-    }
   } else if (nextStatus === "FAILED" || nextStatus === "EXPIRED") {
     await db.trackingEvent.create({
       data: { orderId: order.id, eventName: "purchase_failed", metadata: { status: nextStatus } },
@@ -109,11 +139,50 @@ export async function applyTransactionSnapshot(orderId: string, tx: BravopayTran
 }
 
 /**
+ * Confirma e marca como pago um pedido da InfinitePay. A transição para PAID é
+ * atômica (updateMany com status != PAID), então webhook e redirect chegando ao
+ * mesmo tempo não disparam o Purchase do Meta duas vezes.
+ */
+export async function confirmInfinitePayOrder(
+  order: OrderWithCustomer,
+  info: { transactionNsu: string; slug: string }
+) {
+  if (order.status === "PAID") return order;
+
+  const check = await checkPayment({ orderNsu: order.displayId, transactionNsu: info.transactionNsu, slug: info.slug });
+  if (!check.paid) return order;
+
+  const claim = await db.order.updateMany({
+    where: { id: order.id, status: { not: "PAID" } },
+    data: {
+      status: "PAID",
+      paidAt: new Date(),
+      bravopayTransactionId: info.transactionNsu, // coluna genérica de "id da transação do gateway"
+      lastCheckedAt: new Date(),
+    },
+  });
+  if (claim.count !== 1) return db.order.findUnique({ where: { id: order.id } });
+
+  await recordOrderPaid(order, true, {
+    transactionId: info.transactionNsu,
+    statusLabel: "PAID",
+    amountCents: check.amount ?? order.totalCents,
+    netCents: check.paid_amount ?? null,
+    feeCents: null,
+    method: check.capture_method ?? "credit_card",
+    rawPayload: check as unknown as Prisma.InputJsonValue,
+  });
+
+  return db.order.findUnique({ where: { id: order.id } });
+}
+
+/**
  * Pull-based sync used by frontend polling and the admin "reverify" button.
  * Throttled by `minIntervalMs` so a chatty client can't burn BravoPay's rate
  * limit (60 req/min per key, shared across the whole store).
  */
 export async function syncOrderFromBravopay(order: Order, minIntervalMs = 4000) {
+  if (order.gateway === "infinitepay") return order; // pedido de outro gateway: não consultar a BravoPay
   const terminal: Order["status"][] = ["PAID", "REFUNDED", "CHARGEBACK"];
   if (terminal.includes(order.status)) return order;
 

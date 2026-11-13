@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { priceCheckout } from "@/lib/pricing";
 import { createPixTransaction, BravopayError } from "@/lib/bravopay";
+import { createCheckoutLink, InfinitePayError } from "@/lib/infinitepay";
+import { getSettings } from "@/lib/settings";
 import { generateDisplayId } from "@/lib/ids";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -155,6 +157,39 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  const gateway = (await getSettings()).payment_gateway === "infinitepay" ? "infinitepay" : "bravopay";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
+  if (gateway === "infinitepay") {
+    try {
+      const url = await createCheckoutLink({
+        amountCents: order.totalCents,
+        // id do pedido na descrição → link único por pedido (a InfinitePay deduplica itens idênticos).
+        description: `${quote.items[0]?.name ?? "Árvore de Natal Montada"} · Pedido ${order.displayId}`,
+        orderNsu: order.displayId,
+        redirectUrl: `${siteUrl}/pedido/sucesso/${order.displayId}`,
+        webhookUrl: `${siteUrl}/api/webhooks/infinitepay`,
+        customer: { name: customer.name, email: customer.email, phone: customer.phone },
+      });
+
+      order = await db.order.update({
+        where: { id: order.id },
+        data: { status: "PENDING", gateway: "infinitepay", checkoutUrl: url },
+      });
+
+      await db.trackingEvent.create({ data: { orderId: order.id, eventName: "checkout_link_created" } });
+    } catch (err) {
+      await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
+      await db.trackingEvent.create({
+        data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: "infinitepay_error" } },
+      });
+      const message = err instanceof InfinitePayError ? err.message : "Falha ao gerar o checkout";
+      return NextResponse.json({ error: message }, { status: 502 });
+    }
+
+    return NextResponse.json(toResponse(order));
+  }
+
   try {
     const tx = await createPixTransaction({
       amountCents: order.totalCents,
@@ -215,6 +250,7 @@ function toResponse(order: {
   shippingCents: number;
   pixCopyPaste: string | null;
   pixExpiresAt: Date | null;
+  checkoutUrl?: string | null;
 }) {
   return {
     orderId: order.displayId,
@@ -224,5 +260,7 @@ function toResponse(order: {
     shippingCents: order.shippingCents,
     pixCopyPaste: order.pixCopyPaste,
     pixExpiresAt: order.pixExpiresAt,
+    // InfinitePay: o cliente é redirecionado para esta URL hospedada (cartão+PIX).
+    redirectUrl: order.checkoutUrl ?? null,
   };
 }

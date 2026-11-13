@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 
 export const DEFAULT_SETTINGS = {
   store_name: "Senhor Natal",
+  // Gateway que cobra os pedidos: "bravopay" (PIX na própria página) ou "infinitepay" (cartão+PIX hospedado).
+  payment_gateway: "bravopay",
   main_price_cents: "9700",
   compare_at_cents: "",
   shipping_days: "3 a 5",

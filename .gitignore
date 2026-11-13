@@ -25,3 +25,6 @@ _to_delete/
 
 # playwright-cli snapshots
 .playwright-cli/
+
+.vercel
+.env*

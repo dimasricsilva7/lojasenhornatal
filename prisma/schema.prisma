@@ -114,9 +114,11 @@ model Order {
   discountCents     Int         @default(0)
   totalCents        Int
 
+  gateway           String      @default("bravopay") // bravopay | infinitepay
   bravopayTransactionId String? @unique
   pixCopyPaste      String?
   pixExpiresAt      DateTime?
+  checkoutUrl       String?     // URL do checkout hospedado (InfinitePay)
   idempotencyKey    String      @unique
 
   paidAt            DateTime?

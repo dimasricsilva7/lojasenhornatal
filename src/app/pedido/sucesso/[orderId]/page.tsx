@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { formatBRL } from "@/lib/pricing";
 import PurchaseTracker from "./PurchaseTracker";
 import { claimPurchasePixel } from "@/lib/purchase-pixel";
+import { confirmInfinitePayOrder } from "@/lib/order-status";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,25 @@ export async function generateMetadata() {
   return { title: "Pedido confirmado", robots: { index: false, follow: false } };
 }
 
-export default async function OrderSuccessPage({ params }: { params: { orderId: string } }) {
-  const order = await db.order.findUnique({
-    where: { displayId: params.orderId },
-    include: { items: { include: { product: true } }, customer: true },
-  });
+const ORDER_INCLUDE = { items: { include: { product: true } }, customer: true } as const;
+
+export default async function OrderSuccessPage({
+  params,
+  searchParams,
+}: {
+  params: { orderId: string };
+  searchParams: { transaction_nsu?: string; slug?: string };
+}) {
+  let order = await db.order.findUnique({ where: { displayId: params.orderId }, include: ORDER_INCLUDE });
 
   if (!order) notFound();
+
+  // Volta do checkout hospedado da InfinitePay: confirma no servidor (o webhook
+  // pode chegar depois). Os parâmetros do redirect não são confiáveis — payment_check decide.
+  if (order.gateway === "infinitepay" && order.status !== "PAID" && searchParams?.transaction_nsu && searchParams?.slug) {
+    await confirmInfinitePayOrder(order, { transactionNsu: searchParams.transaction_nsu, slug: searchParams.slug });
+    order = (await db.order.findUnique({ where: { displayId: params.orderId }, include: ORDER_INCLUDE })) ?? order;
+  }
 
   const isPaid = order.status === "PAID";
   const firstName = order.customer.name.trim().split(" ")[0];

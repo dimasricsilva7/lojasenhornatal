@@ -155,6 +155,25 @@ export default function SettingsClient() {
         </p>
       </div>
 
+      <div className="card-surface space-y-3 p-6">
+        <div>
+          <p className="text-sm font-bold text-graphite-950">Processador de pagamento</p>
+          <p className="mt-1 text-xs text-graphite-800/60">
+            Escolhe por qual gateway os pedidos são cobrados. Vale para novas compras a partir do salvamento.
+          </p>
+        </div>
+        <label className="block">
+          <select
+            value={settings.payment_gateway ?? "bravopay"}
+            onChange={(e) => setSettings((s) => ({ ...s, payment_gateway: e.target.value }))}
+            className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
+          >
+            <option value="bravopay">BravoPay — PIX na própria página</option>
+            <option value="infinitepay">InfinitePay — cartão + PIX (página hospedada)</option>
+          </select>
+        </label>
+      </div>
+
       {GROUPS.map((group) => (
         <div key={group.title} className="card-surface space-y-4 p-6">
           <p className="text-sm font-bold text-graphite-950">{group.title}</p>
