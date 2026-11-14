@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { syncOrderFromBravopay } from "@/lib/order-status";
+import { syncOrderFromProvider } from "@/lib/order-status";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest, { params }: { params: { displayId: string } }) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { displayId: s
   const order = await db.order.findUnique({ where: { displayId: params.displayId } });
   if (!order) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const synced = (await syncOrderFromBravopay(order)) ?? order;
+  const synced = (await syncOrderFromProvider(order)) ?? order;
 
   return NextResponse.json({
     orderId: synced.displayId,

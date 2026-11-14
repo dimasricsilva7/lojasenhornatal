@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { priceCheckout } from "@/lib/pricing";
 import { createPixTransaction, BravopayError } from "@/lib/bravopay";
 import { createCheckoutLink, InfinitePayError } from "@/lib/infinitepay";
+import { createPixCharge as mpCreatePix, MercadoPagoError } from "@/lib/mercadopago";
+import { createPixCharge as pbCreatePix, PagBankError } from "@/lib/pagbank";
 import { getSettings } from "@/lib/settings";
 import { generateDisplayId } from "@/lib/ids";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -157,7 +159,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const gateway = (await getSettings()).payment_gateway === "infinitepay" ? "infinitepay" : "bravopay";
+  const rawGateway = (await getSettings()).payment_gateway;
+  const gateway = ["infinitepay", "mercadopago", "pagbank"].includes(rawGateway) ? rawGateway : "bravopay";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
   if (gateway === "infinitepay") {
@@ -184,6 +187,50 @@ export async function POST(req: NextRequest) {
         data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: "infinitepay_error" } },
       });
       const message = err instanceof InfinitePayError ? err.message : "Falha ao gerar o checkout";
+      return NextResponse.json({ error: message }, { status: 502 });
+    }
+
+    return NextResponse.json(toResponse(order));
+  }
+
+  // Mercado Pago / PagBank: PIX gerado via API e exibido NO nosso checkout (mesmo
+  // fluxo do BravoPay — copia-e-cola + QR + polling). Confirmação por GET autoritativo.
+  if (gateway === "mercadopago" || gateway === "pagbank") {
+    try {
+      const desc = quote.items[0]?.name ?? "Árvore de Natal Montada";
+      const pix =
+        gateway === "mercadopago"
+          ? await mpCreatePix({
+              amountCents: order.totalCents,
+              description: desc,
+              orderNsu: order.displayId,
+              payer: { email: customer.email, firstName: customer.name.split(" ")[0], cpf: customer.cpf },
+            })
+          : await pbCreatePix({
+              amountCents: order.totalCents,
+              description: desc,
+              orderNsu: order.displayId,
+              customer: { name: customer.name, email: customer.email, cpf: customer.cpf, phone: customer.phone },
+              webhookUrl: `${siteUrl}/api/webhooks/pagbank`,
+            });
+
+      order = await db.order.update({
+        where: { id: order.id },
+        data: {
+          status: "PIX_GENERATED",
+          gateway,
+          bravopayTransactionId: pix.providerTxId,
+          pixCopyPaste: pix.copyPaste,
+          pixExpiresAt: pix.expiresAt,
+        },
+      });
+      await db.trackingEvent.create({ data: { orderId: order.id, eventName: "pix_generated" } });
+    } catch (err) {
+      await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
+      await db.trackingEvent.create({
+        data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: `${gateway}_error` } },
+      });
+      const message = err instanceof MercadoPagoError || err instanceof PagBankError ? err.message : "Falha ao gerar o PIX";
       return NextResponse.json({ error: message }, { status: 502 });
     }
 

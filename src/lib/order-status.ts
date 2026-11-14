@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { Prisma, type Order, type Customer } from "@prisma/client";
 import { findTransactionByExternalReference, getTransaction, type BravopayTransaction } from "@/lib/bravopay";
 import { checkPayment } from "@/lib/infinitepay";
+import { getStatus as mpGetStatus } from "@/lib/mercadopago";
+import { getStatus as pbGetStatus } from "@/lib/pagbank";
 import { sendMetaCapiEvent } from "@/lib/meta-capi";
 
 const STATUS_MAP: Record<BravopayTransaction["status"], Order["status"]> = {
@@ -139,41 +141,55 @@ export async function applyTransactionSnapshot(orderId: string, tx: BravopayTran
 }
 
 /**
- * Confirma e marca como pago um pedido da InfinitePay. A transição para PAID é
- * atômica (updateMany com status != PAID), então webhook e redirect chegando ao
- * mesmo tempo não disparam o Purchase do Meta duas vezes.
+ * Marca um pedido como pago, válido para qualquer gateway de confirmação própria
+ * (Mercado Pago, PagBank, InfinitePay). A transição para PAID é ATÔMICA
+ * (updateMany com status != PAID), então webhook e polling chegando ao mesmo
+ * tempo não disparam o Purchase do Meta duas vezes. O chamador já confirmou o
+ * pagamento na fonte de verdade do gateway antes de chamar aqui.
  */
-export async function confirmInfinitePayOrder(
-  order: OrderWithCustomer,
-  info: { transactionNsu: string; slug: string }
+export async function markOrderPaidGeneric(
+  orderId: string,
+  info: { providerTxId: string; amountCents: number; netCents?: number | null; method: string }
 ) {
+  const order = await db.order.findUnique({ where: { id: orderId }, include: { customer: true } });
+  if (!order) return null;
   if (order.status === "PAID") return order;
-
-  const check = await checkPayment({ orderNsu: order.displayId, transactionNsu: info.transactionNsu, slug: info.slug });
-  if (!check.paid) return order;
 
   const claim = await db.order.updateMany({
     where: { id: order.id, status: { not: "PAID" } },
     data: {
       status: "PAID",
       paidAt: new Date(),
-      bravopayTransactionId: info.transactionNsu, // coluna genérica de "id da transação do gateway"
+      bravopayTransactionId: info.providerTxId, // coluna genérica de "id da transação do gateway"
       lastCheckedAt: new Date(),
     },
   });
-  if (claim.count !== 1) return db.order.findUnique({ where: { id: order.id } });
+  if (claim.count !== 1) return db.order.findUnique({ where: { id: orderId }, include: { customer: true } });
 
   await recordOrderPaid(order, true, {
-    transactionId: info.transactionNsu,
+    transactionId: info.providerTxId,
     statusLabel: "PAID",
-    amountCents: check.amount ?? order.totalCents,
-    netCents: check.paid_amount ?? null,
+    amountCents: info.amountCents,
+    netCents: info.netCents ?? null,
     feeCents: null,
-    method: check.capture_method ?? "credit_card",
-    rawPayload: check as unknown as Prisma.InputJsonValue,
+    method: info.method,
+    rawPayload: info as unknown as Prisma.InputJsonValue,
   });
 
-  return db.order.findUnique({ where: { id: order.id } });
+  return db.order.findUnique({ where: { id: orderId }, include: { customer: true } });
+}
+
+/** Confirma via payment_check e marca como pago (InfinitePay). */
+export async function confirmInfinitePayOrder(order: OrderWithCustomer, info: { transactionNsu: string; slug: string }) {
+  if (order.status === "PAID") return order;
+  const check = await checkPayment({ orderNsu: order.displayId, transactionNsu: info.transactionNsu, slug: info.slug });
+  if (!check.paid) return order;
+  return markOrderPaidGeneric(order.id, {
+    providerTxId: info.transactionNsu,
+    amountCents: check.amount ?? order.totalCents,
+    netCents: check.paid_amount ?? null,
+    method: check.capture_method ?? "credit_card",
+  });
 }
 
 /**
@@ -202,4 +218,33 @@ export async function syncOrderFromBravopay(order: Order, minIntervalMs = 4000) 
   }
 
   return applyTransactionSnapshot(order.id, tx);
+}
+
+/**
+ * Sincroniza o status consultando a fonte de verdade do gateway do pedido.
+ * Usado pelo polling do checkout e pelo reverify do admin. Mercado Pago e PagBank
+ * confirmam por consulta autoritativa (GET) com o nosso token — por isso o webhook
+ * é só um gatilho e nada é marcado pago sem este GET.
+ */
+export async function syncOrderFromProvider(order: Order, minIntervalMs = 4000) {
+  if (order.gateway === "bravopay") return syncOrderFromBravopay(order, minIntervalMs);
+  if (order.gateway === "infinitepay") return order; // confirmado no retorno/webhook
+
+  const terminal: Order["status"][] = ["PAID", "REFUNDED", "CHARGEBACK"];
+  if (terminal.includes(order.status)) return order;
+  if (order.lastCheckedAt && Date.now() - order.lastCheckedAt.getTime() < minIntervalMs) return order;
+  if (!order.bravopayTransactionId) {
+    await db.order.update({ where: { id: order.id }, data: { lastCheckedAt: new Date() } });
+    return order;
+  }
+
+  let status: "PAID" | "PENDING" | "FAILED" = "PENDING";
+  if (order.gateway === "mercadopago") status = await mpGetStatus(order.bravopayTransactionId);
+  else if (order.gateway === "pagbank") status = await pbGetStatus(order.bravopayTransactionId);
+
+  if (status === "PAID") {
+    return (await markOrderPaidGeneric(order.id, { providerTxId: order.bravopayTransactionId, amountCents: order.totalCents, method: "pix" })) ?? order;
+  }
+  await db.order.update({ where: { id: order.id }, data: { lastCheckedAt: new Date() } });
+  return order;
 }

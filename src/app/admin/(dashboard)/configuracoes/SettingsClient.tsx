@@ -169,8 +169,13 @@ export default function SettingsClient() {
             className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
           >
             <option value="bravopay">BravoPay — PIX na própria página</option>
+            <option value="mercadopago">Mercado Pago — PIX na própria página</option>
+            <option value="pagbank">PagBank — PIX na própria página</option>
             <option value="infinitepay">InfinitePay — cartão + PIX (página hospedada)</option>
           </select>
+          <span className="mt-1 block text-xs text-graphite-800/50">
+            Mercado Pago e PagBank exigem a credencial configurada na Vercel (token do provedor). Sem credencial, o pedido falha ao gerar o PIX.
+          </span>
         </label>
       </div>
 
