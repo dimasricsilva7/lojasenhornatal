@@ -1,0 +1,419 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import {
+  MessageCircle,
+  Building2,
+  HeartHandshake,
+  Store,
+  ChefHat,
+  BadgeCheck,
+  Clock,
+  HandCoins,
+  Truck,
+  ShieldCheck,
+  Sparkles,
+  CheckCircle2,
+  FileText,
+  Phone,
+  Star,
+} from "lucide-react";
+import Snowfall from "@/components/Snowfall";
+import { whatsappHref, WHATSAPP_NUMBER } from "@/lib/atacado";
+import QuoteBuilder from "./QuoteBuilder";
+import SocialProofStrip from "./SocialProofStrip";
+import StickyWhats from "./StickyWhats";
+
+export const metadata: Metadata = {
+  title: "Atacado de Panetones e Chocotones para Empresas e Doação | Senhor Natal",
+  description:
+    "Panetones e chocotones no atacado para brindes de empresa, ações sociais e revenda. Preço por volume, caseiro e Bauducco, sob encomenda com sinal de 50%. Faça seu orçamento no WhatsApp.",
+  alternates: { canonical: "/atacado-panetone" },
+  openGraph: {
+    title: "Atacado de Panetones e Chocotones | Senhor Natal",
+    description:
+      "Brindes de Natal para empresas, doação e revenda. Orçamento rápido no WhatsApp, sob encomenda com sinal de 50%.",
+    type: "website",
+  },
+};
+
+const heroHref = whatsappHref(
+  "Olá, Senhor Natal! 🎄 Vim pela página de atacado e quero um orçamento de panetones."
+);
+
+function TrustBar() {
+  const items = [
+    { icon: ChefHat, text: "Caseiro artesanal + marca Bauducco" },
+    { icon: HandCoins, text: "Preço que cai com o volume" },
+    { icon: Phone, text: "Atendimento humano no WhatsApp" },
+    { icon: BadgeCheck, text: "Nota fiscal pra sua empresa" },
+  ];
+  return (
+    <div className="border-y border-graphite-900/10 bg-cream-25">
+      <div className="container-app grid grid-cols-2 gap-x-6 gap-y-3 py-4 md:grid-cols-4">
+        {items.map((it) => (
+          <div key={it.text} className="flex items-center gap-2 text-xs font-semibold text-graphite-700 sm:text-sm">
+            <it.icon className="h-4 w-4 shrink-0 text-sage-600" />
+            {it.text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function AtacadoPanetonePage() {
+  return (
+    <main className="relative overflow-hidden">
+      <Snowfall />
+
+      {/* Header enxuto e independente */}
+      <header className="relative z-10 border-b border-graphite-900/10 bg-cream-50/90 backdrop-blur">
+        <div className="container-app flex items-center justify-between py-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-clay-600" />
+            <span className="text-lg font-extrabold tracking-tight text-graphite-950">
+              Senhor Natal <span className="font-semibold text-clay-600">· Atacado</span>
+            </span>
+          </div>
+          <a href={heroHref} target="_blank" rel="noopener noreferrer" className="btn-green !px-4 !py-2.5 text-xs sm:text-sm">
+            <MessageCircle className="h-4 w-4" /> WhatsApp
+          </a>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="relative z-10 bg-gradient-to-b from-sage-50 to-cream-50">
+        <div className="container-app grid gap-8 py-12 sm:py-16 lg:grid-cols-2 lg:items-center lg:py-20">
+          <div className="animate-fadeUp">
+            <p className="eyebrow mb-4">🎄 Pedidos de Natal no atacado · vagas de produção acabando</p>
+            <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-graphite-950 sm:text-4xl lg:text-5xl">
+              Panetone de verdade pra{" "}
+              <span className="text-clay-600">presentear, doar e fidelizar</span> neste Natal.
+            </h1>
+            <p className="mt-5 max-w-lg text-lg text-graphite-700">
+              Do caseiro artesanal à marca Bauducco. Quanto maior o pedido,{" "}
+              <strong>menor o preço por unidade</strong>. Você monta o orçamento aqui e fecha num papo
+              rápido no WhatsApp — com atendimento humano do início ao fim.
+            </p>
+
+            <ul className="mt-6 space-y-2">
+              {[
+                "Ideal pra brindes de empresa, ações sociais e revenda",
+                "Produção sob encomenda — qualidade e frescor garantidos",
+                "Sinal de 50% reserva sua produção; o resto você acerta na entrega",
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-2 text-graphite-800">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-sage-600" />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="#orcamento" className="btn-primary !py-4 text-base">
+                Montar meu orçamento agora
+              </Link>
+              <a href={heroHref} target="_blank" rel="noopener noreferrer" className="btn-secondary !py-4 text-base">
+                <MessageCircle className="h-5 w-5 text-sage-600" /> Falar no WhatsApp
+              </a>
+            </div>
+            <p className="mt-3 flex items-center gap-1 text-xs text-graphite-500">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> Centenas de panetones entregues
+              na temporada passada
+            </p>
+          </div>
+
+          {/* Card de destaque de preço */}
+          <div className="animate-fadeUp lg:justify-self-end">
+            <div className="card-surface w-full max-w-md overflow-hidden">
+              <div className="bg-clay-600 px-6 py-5 text-white">
+                <p className="text-sm font-semibold uppercase tracking-wide text-clay-50">A partir de</p>
+                <p className="text-4xl font-extrabold">
+                  R$ 4,87 <span className="text-base font-semibold text-clay-50">/ panetone 400g</span>
+                </p>
+                <p className="text-sm text-clay-50">no caseiro, acima de 1.000 unidades</p>
+              </div>
+              <div className="space-y-3 px-6 py-5">
+                {[
+                  ["Panetone/Chocotone caseiro 400g", "R$ 7,65 a R$ 4,87 / un"],
+                  ["Mini caseiro 100g (caixa 24 un)", "R$ 88,56 / caixa"],
+                  ["Caixa Bauducco 400g (10 un)", "R$ 144,90 a R$ 154,90"],
+                  ["Caixa Bauducco mini 80g (24 un)", "R$ 74,90 a R$ 86,90"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex items-center justify-between gap-3 border-b border-graphite-900/5 pb-2 text-sm last:border-0">
+                    <span className="text-graphite-700">{k}</span>
+                    <span className="whitespace-nowrap font-bold text-graphite-950">{v}</span>
+                  </div>
+                ))}
+                <Link href="#orcamento" className="btn-green mt-2 w-full">
+                  Ver preço do meu volume
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <TrustBar />
+
+      {/* PRA QUEM É */}
+      <section className="section relative z-10">
+        <div className="container-app">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow mb-3">Feito pra quem compra em quantidade</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Seu Natal resolvido, seja qual for o motivo
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: Building2,
+                title: "Empresas",
+                desc: "Presenteie colaboradores e clientes com um brinde que todo mundo leva pra casa e lembra da sua marca. Nota fiscal e entrega combinada.",
+              },
+              {
+                icon: HeartHandshake,
+                title: "Doação & Caridade",
+                desc: "Leve o sabor do Natal pra famílias, igrejas e instituições. Preço de atacado pra sua ação social alcançar mais gente.",
+              },
+              {
+                icon: Store,
+                title: "Revenda",
+                desc: "Compre barato, venda com boa margem. Caseiro artesanal e Bauducco com preço que fecha a conta no fim do ano.",
+              },
+            ].map((c) => (
+              <div key={c.title} className="card-surface p-6">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-sage-100 text-sage-700">
+                  <c.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-extrabold text-graphite-950">{c.title}</h3>
+                <p className="mt-2 text-sm text-graphite-600">{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROBLEMA / SOLUÇÃO */}
+      <section className="section relative z-10 bg-white">
+        <div className="container-app grid gap-10 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="eyebrow mb-3">O que ninguém te conta sobre comprar no fim do ano</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Deixar pra última hora custa caro — e sai mais caro ainda.
+            </h2>
+            <div className="mt-6 space-y-4 text-graphite-700">
+              <p>
+                Em dezembro, fornecedor bom fica sem estoque, preço dispara e você acaba pagando mais
+                por um produto pior — correndo o risco de não receber a tempo da sua confraternização ou
+                da sua ação social.
+              </p>
+              <p>
+                Quem se organiza agora <strong>trava o preço</strong>, garante a produção e entrega o
+                Natal sem estresse. É exatamente isso que a gente faz por você.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {[
+              ["❌ Última hora", "Sem estoque, preço alto, qualidade duvidosa, entrega incerta."],
+              ["✅ Com a Senhor Natal", "Preço travado por volume, produção garantida e data de entrega combinada."],
+            ].map(([k, v], i) => (
+              <div
+                key={k}
+                className={`rounded-xl2 p-5 ${i === 0 ? "bg-clay-50 ring-1 ring-clay-100" : "bg-sage-50 ring-1 ring-sage-200"}`}
+              >
+                <p className="font-extrabold text-graphite-950">{k}</p>
+                <p className="mt-1 text-sm text-graphite-700">{v}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CALCULADORA DE ORÇAMENTO */}
+      <section id="orcamento" className="section relative z-10 scroll-mt-4 bg-cream-50">
+        <div className="container-app">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow mb-3">Monte e veja o preço na hora</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Calculadora de orçamento
+            </h2>
+            <p className="mt-3 text-graphite-600">
+              Escolha as quantidades, preencha seus dados e chame no WhatsApp já com tudo pronto. Sem
+              compromisso — o valor fecha quando você aprovar.
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <QuoteBuilder />
+          </div>
+
+          {/* Política de encomenda + sinal (bem clara) */}
+          <div className="mx-auto mt-8 max-w-3xl rounded-xl2 border border-clay-100 bg-clay-50 p-5">
+            <div className="flex items-start gap-3">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-clay-600" />
+              <div className="text-sm text-graphite-800">
+                <p className="font-extrabold text-clay-700">Como funciona o pedido (leia antes de enviar):</p>
+                <p className="mt-1">
+                  Todos os panetones são <strong>produzidos/separados sob encomenda</strong>. Para iniciar a
+                  produção do seu pedido é necessário um <strong>sinal de 50%</strong> do valor. O restante é
+                  acertado na entrega/retirada, conforme combinado no WhatsApp. Assim garantimos qualidade,
+                  frescor e a sua data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* COMO FUNCIONA */}
+      <section className="section relative z-10">
+        <div className="container-app">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow mb-3">Simples e sem burocracia</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Do orçamento à entrega em 4 passos
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: FileText, t: "1. Monte o orçamento", d: "Escolha os produtos e quantidades aqui na página." },
+              { icon: MessageCircle, t: "2. Fale no WhatsApp", d: "A gente confirma tudo e tira suas dúvidas com atendimento humano." },
+              { icon: HandCoins, t: "3. Sinal de 50%", d: "Você paga o sinal e a gente inicia a produção do seu pedido." },
+              { icon: Truck, t: "4. Entrega combinada", d: "Entregamos na data certa e você acerta o restante." },
+            ].map((s) => (
+              <div key={s.t} className="card-surface p-5 text-center">
+                <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-clay-50 text-clay-600">
+                  <s.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-extrabold text-graphite-950">{s.t}</h3>
+                <p className="mt-1 text-sm text-graphite-600">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <SocialProofStrip />
+
+      {/* CONFIANÇA / HUMANIZADO */}
+      <section className="section relative z-10 bg-sage-600 text-white">
+        <div className="container-app grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-sage-100">Gente de verdade te atendendo</p>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
+              Transparência do começo ao fim. Sem letra miúda.
+            </h2>
+            <p className="mt-4 text-sage-50">
+              Aqui você conversa com pessoas, não com robô. A gente te mostra tudo antes: preço, prazo,
+              forma de pagamento e entrega. Você só paga o sinal quando estiver 100% seguro do pedido —
+              e o combinado é combinado.
+            </p>
+            <a
+              href={heroHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold text-sage-700 shadow-soft transition-transform hover:scale-[1.02]"
+            >
+              <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp agora
+            </a>
+          </div>
+          <div className="grid gap-3">
+            {[
+              { Icon: ShieldCheck, t: "Preço e condições por escrito antes de qualquer pagamento" },
+              { Icon: BadgeCheck, t: "Emitimos nota fiscal pra sua empresa ou instituição" },
+              { Icon: HandCoins, t: "Sinal de 50% só pra reservar sua produção — sem pegadinha" },
+            ].map(({ Icon, t }) => (
+              <div key={t} className="flex items-center gap-3 rounded-xl2 bg-white/10 p-4 backdrop-blur">
+                <Icon className="h-6 w-6 shrink-0 text-sage-100" />
+                <span className="text-sm font-medium">{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section relative z-10 bg-white">
+        <div className="container-app mx-auto max-w-3xl">
+          <div className="text-center">
+            <p className="eyebrow mb-3">Ainda com dúvida?</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Perguntas frequentes
+            </h2>
+          </div>
+          <div className="mt-8 space-y-3">
+            {[
+              {
+                q: "Qual o pedido mínimo?",
+                a: "Trabalhamos com atacado, então o ideal é a partir de algumas dezenas de unidades. Monte seu orçamento na calculadora e, se tiver dúvida, chame no WhatsApp que a gente te orienta.",
+              },
+              {
+                q: "Por que precisa de sinal de 50%?",
+                a: "Porque os panetones são produzidos/separados sob encomenda, especialmente pro seu pedido. O sinal reserva a sua produção e garante sua data. O restante é acertado na entrega.",
+              },
+              {
+                q: "Qual o prazo de produção e entrega?",
+                a: "Depende do volume e da data desejada. Por isso é importante se organizar com antecedência — em dezembro as vagas de produção se esgotam. Combinamos o prazo exato no WhatsApp.",
+              },
+              {
+                q: "Vocês emitem nota fiscal?",
+                a: "Sim. Emitimos nota fiscal para empresas e instituições. Só avisar no atendimento.",
+              },
+              {
+                q: "Qual a diferença do caseiro pro Bauducco?",
+                a: "O caseiro é artesanal, com massa macia e bem recheada, e tem preço que cai conforme o volume. O Bauducco é a marca conhecida, em caixas fechadas — ótimo quando o nome importa no presente.",
+              },
+              {
+                q: "Como faço o pagamento?",
+                a: "O sinal e o restante são combinados direto com a gente no WhatsApp, da forma que for mais prática pra você. Tudo transparente e por escrito antes.",
+              },
+            ].map((f) => (
+              <details key={f.q} className="group card-surface p-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-bold text-graphite-950">
+                  {f.q}
+                  <span className="text-clay-600 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 text-sm text-graphite-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="section relative z-10 bg-graphite-950 text-white">
+        <div className="container-app text-center">
+          <h2 className="mx-auto max-w-2xl text-2xl font-extrabold tracking-tight sm:text-3xl">
+            As vagas de produção de dezembro são limitadas. Garanta as suas agora.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-cream-200">
+            Monte seu orçamento em 1 minuto e fale com a gente. Quanto antes você fechar, melhor o preço
+            e mais tranquila a sua entrega.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="#orcamento" className="btn-primary !py-4 text-base">
+              Montar meu orçamento
+            </Link>
+            <a href={heroHref} target="_blank" rel="noopener noreferrer" className="btn-green !py-4 text-base">
+              <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER independente */}
+      <footer className="relative z-10 bg-graphite-900 py-8 text-center text-sm text-cream-200">
+        <div className="container-app space-y-1">
+          <p className="font-bold text-white">Senhor Natal · Atacado de Panetones</p>
+          <p>Atendimento pelo WhatsApp {`(${WHATSAPP_NUMBER.slice(2, 4)}) ${WHATSAPP_NUMBER.slice(4, 9)}-${WHATSAPP_NUMBER.slice(9)}`}</p>
+          <p className="text-xs text-cream-200/60">© {new Date().getFullYear()} Senhor Natal. Todos os direitos reservados.</p>
+        </div>
+      </footer>
+
+      <StickyWhats />
+    </main>
+  );
+}
