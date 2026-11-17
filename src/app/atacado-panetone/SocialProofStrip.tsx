@@ -24,32 +24,39 @@ type Proof = {
 
 const PROOFS: Proof[] = [
   {
-    img: "/images/atacado/prova-1.jpg",
-    title: "300 panetones entregues no prazo",
-    desc: "Brinde de Natal pra toda a equipe. Chegou tudo certinho e caprichado.",
-    name: "Nome do cliente",
-    city: "Cidade/UF",
+    img: "/images/atacado/prova-mercado.png",
+    title: "Reposição garantida pro mercado",
+    desc: "Panetone caseiro e Bauducco em volume, com preço que fecha a conta no fim do ano.",
+    name: "Mercado parceiro",
+    city: "Revenda",
   },
   {
-    img: "/images/atacado/prova-2.jpg",
+    img: "/images/atacado/prova-doacao.png",
     title: "Nossa ação social foi um sucesso",
     desc: "Compramos pra doação e as famílias amaram. Já quero repetir ano que vem.",
-    name: "Nome do cliente",
-    city: "Cidade/UF",
+    name: "Instituição parceira",
+    city: "Ação social",
   },
   {
-    img: "/images/atacado/prova-3.jpg",
+    img: "/images/atacado/prova-loja.png",
     title: "Qualidade de verdade, preço justo",
     desc: "Revendi tudo rapidinho. Panetone caseiro macio e bem recheado.",
-    name: "Nome do cliente",
-    city: "Cidade/UF",
+    name: "Loja parceira",
+    city: "Revenda",
   },
   {
-    img: "/images/atacado/prova-4.jpg",
+    img: "/images/atacado/prova-padaria.png",
     title: "Atendimento humano do início ao fim",
     desc: "Tirei todas as dúvidas no WhatsApp e fechei sem dor de cabeça.",
-    name: "Nome do cliente",
-    city: "Cidade/UF",
+    name: "Padaria parceira",
+    city: "Brindes",
+  },
+  {
+    img: "/images/atacado/prova-estoque.png",
+    title: "Pedido grande, conferido e no prazo",
+    desc: "Caixas certinhas, entrega combinada e tudo rastreável do começo ao fim.",
+    name: "Cliente atacado",
+    city: "Grande volume",
   },
 ];
 

@@ -97,14 +97,19 @@ export default function AtacadoPanetonePage() {
       {/* HERO */}
       <section className="relative z-10 overflow-hidden bg-gradient-to-b from-sage-50 to-cream-50">
         {/* Foto: banner no topo no mobile, fundo atrás do texto no desktop */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/atacado/hero.png"
-          alt="Padeiro finalizando panetones e chocotones artesanais"
-          className="block h-56 w-full object-cover object-right sm:h-80 lg:absolute lg:inset-0 lg:h-full lg:w-full"
-        />
-        {/* Clareado só no desktop p/ o texto ficar legível sobre a foto */}
-        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream-50 via-cream-50/92 to-transparent lg:block" />
+        <div className="relative lg:absolute lg:inset-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/atacado/hero.png"
+            alt="Padeiro finalizando panetones e chocotones artesanais"
+            className="block h-56 w-full object-cover object-[75%_center] sm:h-80 lg:h-full"
+          />
+          {/* escurece um pouco a foto (tira o aspecto lavado e dá contraste) */}
+          <div className="pointer-events-none absolute inset-0 bg-graphite-950/30" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-graphite-950/30 to-transparent" />
+        </div>
+        {/* Clareado à esquerda só no desktop (reduzido) p/ o texto ficar legível */}
+        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream-50 via-cream-50/70 to-transparent lg:block" />
         <div className="container-app relative z-10 grid gap-8 py-10 sm:py-14 lg:grid-cols-2 lg:items-center lg:py-20">
           <div className="animate-fadeUp">
             <p className="eyebrow mb-4">🎄 Pedidos de Natal no atacado · vagas de produção acabando</p>

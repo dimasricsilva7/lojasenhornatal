@@ -95,7 +95,7 @@ export const SKUS: Sku[] = [
     unit: "cx",
     boxSize: 24,
     priceMode: "fixed",
-    fixedCents: 8856,
+    fixedCents: 6490,
   },
   // ---- BAUDUCCO (marca, caixas fechadas) ----
   {
