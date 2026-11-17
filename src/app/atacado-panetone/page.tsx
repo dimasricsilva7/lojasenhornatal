@@ -183,6 +183,72 @@ export default function AtacadoPanetonePage() {
 
       <TrustBar />
 
+      {/* NOSSOS PRODUTOS */}
+      <section className="section relative z-10 overflow-hidden bg-white">
+        <div className="pointer-events-none absolute inset-0 text-clay-100/60">
+          <PanettoneIcon className="absolute left-6 top-10 h-16 w-16 -rotate-12" />
+          <PanettoneIcon className="absolute bottom-10 right-8 h-20 w-20 rotate-6 text-sage-200/60" />
+        </div>
+        <div className="container-app relative">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow mb-3">Feitos pra impressionar</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Nossos panetones caseiros
+            </h2>
+            <p className="mt-3 text-graphite-600">
+              Massa artesanal macia e bem recheada. No tamanho que o seu pedido pedir — com preço que cai
+              conforme o volume.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+            {[
+              {
+                img: "/images/atacado/prod-panetone.png",
+                name: "Panetone caseiro 400g",
+                desc: "Frutas cristalizadas e passas na medida certa.",
+                price: "R$ 6,65 a R$ 3,87 / un",
+              },
+              {
+                img: "/images/atacado/prod-chocotone.png",
+                name: "Chocotone caseiro 400g",
+                desc: "Recheado de gotas de chocolate de verdade.",
+                price: "R$ 6,65 a R$ 3,87 / un",
+              },
+              {
+                img: "/images/atacado/prod-mini-chocotone.gif",
+                name: "Mini chocotone 100g",
+                desc: "Caixa fechada com 24 unidades — perfeito pra brinde.",
+                price: "R$ 64,90 / caixa",
+              },
+            ].map((p) => (
+              <div key={p.name} className="group card-surface overflow-hidden text-center">
+                <div className="flex h-56 items-center justify-center bg-gradient-to-b from-cream-50 to-white p-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.img}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-full w-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-extrabold text-graphite-950">{p.name}</h3>
+                  <p className="mt-1 text-sm text-graphite-600">{p.desc}</p>
+                  <p className="mt-2 font-bold text-clay-600">{p.price}</p>
+                  <Link href="#orcamento" className="btn-green mt-4 w-full">
+                    Montar orçamento
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-sm text-graphite-500">
+            Também trabalhamos com <strong>caixas fechadas da marca Bauducco</strong> (400g e mini). Monte seu
+            orçamento e veja todos os preços.
+          </p>
+        </div>
+      </section>
+
       {/* PRA QUEM É */}
       <section className="section relative z-10 overflow-hidden">
         {/* panetones decorativos ao fundo */}
