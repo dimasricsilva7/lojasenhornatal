@@ -242,6 +242,53 @@ export default function AtacadoPanetonePage() {
         </div>
       </section>
 
+      {/* CHEF */}
+      <section className="section relative z-10 bg-cream-25">
+        <div className="container-app grid gap-8 lg:grid-cols-[minmax(260px,380px)_1fr] lg:items-center">
+          <div className="mx-auto w-full max-w-sm lg:mx-0">
+            <div className="relative overflow-hidden rounded-xl2 shadow-lift ring-1 ring-graphite-900/5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/atacado/chef-tainan.png"
+                alt="Chef Tainan Vitor"
+                loading="lazy"
+                className="aspect-square w-full object-cover"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-graphite-950/80 to-transparent p-4">
+                <p className="text-sm font-bold text-white">Chef Tainan Vitor</p>
+                <p className="text-xs text-cream-200">+25 anos de panificação artesanal</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow mb-3">Quem assina a qualidade</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
+              Chef Tainan Vitor
+            </h2>
+            <div className="mt-4 space-y-3 text-graphite-700">
+              <p>
+                Com mais de <strong>25 anos de dedicação à gastronomia</strong>, o Chef Tainan Vitor construiu
+                sua trajetória movido pela paixão pela panificação artesanal e pela arte de criar produtos de
+                qualidade.
+              </p>
+              <p>
+                Especialista em <strong>panetones e chocotones</strong>, acredita que o segredo de um produto
+                excepcional está na seleção dos ingredientes, no cuidado com cada etapa da produção e no respeito
+                às tradições.
+              </p>
+              <p>
+                Seu trabalho valoriza massas macias, ingredientes selecionados, sabor marcante e acabamento
+                cuidadoso. Neste Natal, compartilha sua paixão pela confeitaria, levando qualidade e tradição para
+                famílias, empresas e parceiros em <strong>todo o Brasil</strong>.
+              </p>
+            </div>
+            <p className="mt-5 border-l-4 border-clay-500 pl-4 text-lg font-extrabold text-graphite-950">
+              Chef Tainan Vitor — tradição, dedicação e sabor em cada detalhe.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* PRA QUEM É */}
       <section className="section relative z-10">
         <div className="container-app">
