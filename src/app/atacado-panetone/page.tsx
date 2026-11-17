@@ -95,32 +95,35 @@ export default function AtacadoPanetonePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-sage-50 to-cream-50">
-        {/* Foto: banner no topo no mobile, fundo atrás do texto no desktop */}
-        <div className="relative lg:absolute lg:inset-0">
+      <section className="relative z-10 overflow-hidden bg-graphite-950">
+        {/* Foto de fundo em toda a hero */}
+        <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/atacado/hero.png"
             alt="Padeiro finalizando panetones e chocotones artesanais"
-            className="block h-56 w-full object-cover object-[75%_center] sm:h-80 lg:h-full"
+            className="h-full w-full object-cover object-[72%_center]"
           />
-          {/* escurece um pouco a foto (tira o aspecto lavado e dá contraste) */}
-          <div className="pointer-events-none absolute inset-0 bg-graphite-950/30" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-graphite-950/30 to-transparent" />
+          {/* escurece um pouco a foto toda */}
+          <div className="pointer-events-none absolute inset-0 bg-graphite-950/35" />
+          {/* degradê da esquerda (escuro) para a direita (foto aparece) */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-graphite-950 via-graphite-950/70 to-graphite-950/15" />
+          {/* reforço vertical no mobile p/ o texto embaixo ficar legível */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-graphite-950/85 via-graphite-950/35 to-graphite-950/55 lg:hidden" />
         </div>
-        {/* Clareado à esquerda só no desktop (reduzido) p/ o texto ficar legível */}
-        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream-50 via-cream-50/70 to-transparent lg:block" />
-        <div className="container-app relative z-10 grid gap-8 py-10 sm:py-14 lg:grid-cols-2 lg:items-center lg:py-20">
+        <div className="container-app relative z-10 grid gap-8 py-14 sm:py-20 lg:grid-cols-2 lg:items-center lg:py-28">
           <div className="animate-fadeUp">
-            <p className="eyebrow mb-4">🎄 Pedidos de Natal no atacado · vagas de produção acabando</p>
-            <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-graphite-950 sm:text-4xl lg:text-5xl">
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-sage-300">
+              🎄 Pedidos de Natal no atacado · vagas de produção acabando
+            </p>
+            <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow sm:text-4xl lg:text-5xl">
               Panetone de verdade pra{" "}
-              <span className="text-clay-600">presentear, doar e fidelizar</span> neste Natal.
+              <span className="text-amber-300">presentear, doar e fidelizar</span> neste Natal.
             </h1>
-            <p className="mt-5 max-w-lg text-lg text-graphite-700">
+            <p className="mt-5 max-w-lg text-lg text-cream-100">
               Do caseiro artesanal à marca Bauducco. Quanto maior o pedido,{" "}
-              <strong>menor o preço por unidade</strong>. Você monta o orçamento aqui e fecha num papo
-              rápido no WhatsApp — com atendimento humano do início ao fim.
+              <strong className="text-white">menor o preço por unidade</strong>. Você monta o orçamento aqui e
+              fecha num papo rápido no WhatsApp — com atendimento humano do início ao fim.
             </p>
 
             <ul className="mt-6 space-y-2">
@@ -129,8 +132,8 @@ export default function AtacadoPanetonePage() {
                 "Enviamos para todo o Brasil com rastreio — prazo a partir de 5 dias após o início da produção",
                 `Pedido mínimo de ${MIN_PIECES} unidades · sinal de 50% reserva sua produção`,
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-graphite-800">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-sage-600" />
+                <li key={t} className="flex items-start gap-2 text-cream-50">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-sage-400" />
                   <span>{t}</span>
                 </li>
               ))}
@@ -140,11 +143,16 @@ export default function AtacadoPanetonePage() {
               <Link href="#orcamento" className="btn-primary !py-4 text-base">
                 Montar meu orçamento agora
               </Link>
-              <a href={heroHref} target="_blank" rel="noopener noreferrer" className="btn-secondary !py-4 text-base">
-                <MessageCircle className="h-5 w-5 text-sage-600" /> Falar no WhatsApp
+              <a
+                href={heroHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 !py-4 text-base font-bold text-white backdrop-blur transition-colors hover:bg-white/20"
+              >
+                <MessageCircle className="h-5 w-5" /> Falar no WhatsApp
               </a>
             </div>
-            <p className="mt-3 flex items-center gap-1 text-xs text-graphite-500">
+            <p className="mt-3 flex items-center gap-1 text-xs text-cream-200/90">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> Centenas de panetones entregues
               na temporada passada
             </p>
