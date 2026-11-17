@@ -96,7 +96,7 @@ export default function AtacadoPanetonePage() {
         </div>
         <div className="container-app relative z-10 grid gap-8 py-14 sm:py-20 lg:grid-cols-2 lg:items-center lg:py-28">
           <div className="animate-fadeUp">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-sage-300">
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-amber-300 [text-shadow:0_1px_8px_rgba(0,0,0,0.75)]">
               🎄 Pedidos de Natal no atacado · vagas de produção acabando
             </p>
             <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow sm:text-4xl lg:text-5xl">
