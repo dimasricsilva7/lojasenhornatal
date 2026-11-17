@@ -21,23 +21,6 @@ import QuoteBuilder from "./QuoteBuilder";
 import SocialProofStrip from "./SocialProofStrip";
 import StickyWhats from "./StickyWhats";
 
-/** Ícone decorativo de panetone (fatia na forminha). Usado solto no fundo das seções. */
-function PanettoneIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
-      <path
-        d="M5 9c0-1 .6-2 2-2h10c1.4 0 2 1 2 2l-1.1 9.2c-.12 1-.97 1.8-1.98 1.8H8.08c-1 0-1.86-.8-1.98-1.8L5 9Z"
-        fill="currentColor"
-        opacity="0.9"
-      />
-      <path d="M4 7.5C4 5.6 5.8 4 8 4h8c2.2 0 4 1.6 4 3.5 0 .8-.9 1.5-2 1.5H6c-1.1 0-2-.7-2-1.5Z" fill="currentColor" />
-      <circle cx="10" cy="13" r="1" fill="#fff" opacity="0.65" />
-      <circle cx="14" cy="16" r="1" fill="#fff" opacity="0.65" />
-      <circle cx="13" cy="11.5" r="0.8" fill="#fff" opacity="0.65" />
-    </svg>
-  );
-}
-
 export const metadata: Metadata = {
   title: "Atacado de Panetones e Chocotones para Empresas e Doação | Senhor Natal",
   description:
@@ -193,10 +176,6 @@ export default function AtacadoPanetonePage() {
 
       {/* NOSSOS PRODUTOS */}
       <section className="section relative z-10 overflow-hidden bg-white">
-        <div className="pointer-events-none absolute inset-0 text-clay-100/60">
-          <PanettoneIcon className="absolute left-6 top-10 h-16 w-16 -rotate-12" />
-          <PanettoneIcon className="absolute bottom-10 right-8 h-20 w-20 rotate-6 text-sage-200/60" />
-        </div>
         <div className="container-app relative">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow mb-3">Feitos pra impressionar</p>
@@ -208,7 +187,7 @@ export default function AtacadoPanetonePage() {
               conforme o volume.
             </p>
           </div>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 img: "/images/atacado/prod-panetone.png",
@@ -223,9 +202,15 @@ export default function AtacadoPanetonePage() {
                 price: "R$ 6,65 a R$ 3,87 / un",
               },
               {
-                img: "/images/atacado/prod-mini-chocotone.gif",
+                img: "/images/atacado/prod-mini-panetone.png",
+                name: "Mini panetone 100g",
+                desc: "Caixa fechada com 24 un — perfeito pra brinde.",
+                price: "R$ 64,90 / caixa",
+              },
+              {
+                img: "/images/atacado/prod-mini-chocotone.png",
                 name: "Mini chocotone 100g",
-                desc: "Caixa fechada com 24 unidades — perfeito pra brinde.",
+                desc: "Caixa fechada com 24 un — gotas de chocolate.",
                 price: "R$ 64,90 / caixa",
               },
             ].map((p) => (
@@ -258,14 +243,8 @@ export default function AtacadoPanetonePage() {
       </section>
 
       {/* PRA QUEM É */}
-      <section className="section relative z-10 overflow-hidden">
-        {/* panetones decorativos ao fundo */}
-        <div className="pointer-events-none absolute inset-0 text-clay-200/40">
-          <PanettoneIcon className="absolute -left-4 top-6 h-20 w-20 -rotate-12" />
-          <PanettoneIcon className="absolute right-2 top-24 h-14 w-14 rotate-6 text-sage-300/40" />
-          <PanettoneIcon className="absolute bottom-6 left-1/2 h-16 w-16 rotate-3" />
-        </div>
-        <div className="container-app relative">
+      <section className="section relative z-10">
+        <div className="container-app">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow mb-3">Feito pra quem compra em quantidade</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
@@ -383,12 +362,8 @@ export default function AtacadoPanetonePage() {
       </section>
 
       {/* COMO FUNCIONA */}
-      <section className="section relative z-10 overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 text-sage-200/40">
-          <PanettoneIcon className="absolute right-4 top-8 h-16 w-16 rotate-12" />
-          <PanettoneIcon className="absolute -left-3 bottom-8 h-20 w-20 -rotate-6 text-clay-200/40" />
-        </div>
-        <div className="container-app relative">
+      <section className="section relative z-10">
+        <div className="container-app">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow mb-3">Simples e sem burocracia</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
@@ -508,6 +483,13 @@ export default function AtacadoPanetonePage() {
       {/* CTA FINAL */}
       <section className="section relative z-10 bg-graphite-950 text-white">
         <div className="container-app text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/atacado/prod-mini-chocotone.gif"
+            alt="Mini chocotone caseiro"
+            loading="lazy"
+            className="mx-auto mb-6 h-40 w-auto object-contain drop-shadow-xl sm:h-48"
+          />
           <h2 className="mx-auto max-w-2xl text-2xl font-extrabold tracking-tight sm:text-3xl">
             As vagas de produção de dezembro são limitadas. Garanta as suas agora.
           </h2>
