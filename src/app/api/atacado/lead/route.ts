@@ -51,6 +51,9 @@ export async function POST(req: Request) {
   if (!quote.hasItems) {
     return NextResponse.json({ error: "orcamento_vazio" }, { status: 400 });
   }
+  if (!quote.meetsMinimum) {
+    return NextResponse.json({ error: "abaixo_do_minimo" }, { status: 400 });
+  }
 
   const items = quote.lines.map((l) => ({
     id: l.id,

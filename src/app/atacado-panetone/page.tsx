@@ -14,14 +14,29 @@ import {
   Sparkles,
   CheckCircle2,
   FileText,
-  Phone,
   Star,
 } from "lucide-react";
-import Snowfall from "@/components/Snowfall";
-import { whatsappHref, WHATSAPP_NUMBER } from "@/lib/atacado";
+import { whatsappHref, WHATSAPP_NUMBER, MIN_PIECES } from "@/lib/atacado";
 import QuoteBuilder from "./QuoteBuilder";
 import SocialProofStrip from "./SocialProofStrip";
 import StickyWhats from "./StickyWhats";
+
+/** Ícone decorativo de panetone (fatia na forminha). Usado solto no fundo das seções. */
+function PanettoneIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
+      <path
+        d="M5 9c0-1 .6-2 2-2h10c1.4 0 2 1 2 2l-1.1 9.2c-.12 1-.97 1.8-1.98 1.8H8.08c-1 0-1.86-.8-1.98-1.8L5 9Z"
+        fill="currentColor"
+        opacity="0.9"
+      />
+      <path d="M4 7.5C4 5.6 5.8 4 8 4h8c2.2 0 4 1.6 4 3.5 0 .8-.9 1.5-2 1.5H6c-1.1 0-2-.7-2-1.5Z" fill="currentColor" />
+      <circle cx="10" cy="13" r="1" fill="#fff" opacity="0.65" />
+      <circle cx="14" cy="16" r="1" fill="#fff" opacity="0.65" />
+      <circle cx="13" cy="11.5" r="0.8" fill="#fff" opacity="0.65" />
+    </svg>
+  );
+}
 
 export const metadata: Metadata = {
   title: "Atacado de Panetones e Chocotones para Empresas e Doação | Senhor Natal",
@@ -44,7 +59,7 @@ function TrustBar() {
   const items = [
     { icon: ChefHat, text: "Caseiro artesanal + marca Bauducco" },
     { icon: HandCoins, text: "Preço que cai com o volume" },
-    { icon: Phone, text: "Atendimento humano no WhatsApp" },
+    { icon: Truck, text: "Enviamos p/ todo o Brasil · com rastreio" },
     { icon: BadgeCheck, text: "Nota fiscal pra sua empresa" },
   ];
   return (
@@ -64,8 +79,6 @@ function TrustBar() {
 export default function AtacadoPanetonePage() {
   return (
     <main className="relative overflow-hidden">
-      <Snowfall />
-
       {/* Header enxuto e independente */}
       <header className="relative z-10 border-b border-graphite-900/10 bg-cream-50/90 backdrop-blur">
         <div className="container-app flex items-center justify-between py-3">
@@ -82,8 +95,17 @@ export default function AtacadoPanetonePage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-10 bg-gradient-to-b from-sage-50 to-cream-50">
-        <div className="container-app grid gap-8 py-12 sm:py-16 lg:grid-cols-2 lg:items-center lg:py-20">
+      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-sage-50 to-cream-50">
+        {/* Foto: banner no topo no mobile, fundo atrás do texto no desktop */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/atacado/hero.png"
+          alt="Padeiro finalizando panetones e chocotones artesanais"
+          className="block h-56 w-full object-cover object-right sm:h-80 lg:absolute lg:inset-0 lg:h-full lg:w-full"
+        />
+        {/* Clareado só no desktop p/ o texto ficar legível sobre a foto */}
+        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-cream-50 via-cream-50/92 to-transparent lg:block" />
+        <div className="container-app relative z-10 grid gap-8 py-10 sm:py-14 lg:grid-cols-2 lg:items-center lg:py-20">
           <div className="animate-fadeUp">
             <p className="eyebrow mb-4">🎄 Pedidos de Natal no atacado · vagas de produção acabando</p>
             <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-graphite-950 sm:text-4xl lg:text-5xl">
@@ -99,8 +121,8 @@ export default function AtacadoPanetonePage() {
             <ul className="mt-6 space-y-2">
               {[
                 "Ideal pra brindes de empresa, ações sociais e revenda",
-                "Produção sob encomenda — qualidade e frescor garantidos",
-                "Sinal de 50% reserva sua produção; o resto você acerta na entrega",
+                "Enviamos para todo o Brasil com rastreio — prazo a partir de 5 dias após o início da produção",
+                `Pedido mínimo de ${MIN_PIECES} unidades · sinal de 50% reserva sua produção`,
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2 text-graphite-800">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-sage-600" />
@@ -129,14 +151,14 @@ export default function AtacadoPanetonePage() {
               <div className="bg-clay-600 px-6 py-5 text-white">
                 <p className="text-sm font-semibold uppercase tracking-wide text-clay-50">A partir de</p>
                 <p className="text-4xl font-extrabold">
-                  R$ 4,87 <span className="text-base font-semibold text-clay-50">/ panetone 400g</span>
+                  R$ 3,87 <span className="text-base font-semibold text-clay-50">/ panetone 400g</span>
                 </p>
                 <p className="text-sm text-clay-50">no caseiro, acima de 1.000 unidades</p>
               </div>
               <div className="space-y-3 px-6 py-5">
                 {[
-                  ["Panetone/Chocotone caseiro 400g", "R$ 7,65 a R$ 4,87 / un"],
-                  ["Mini caseiro 100g (caixa 24 un)", "R$ 88,56 / caixa"],
+                  ["Panetone/Chocotone caseiro 400g", "R$ 6,65 a R$ 3,87 / un"],
+                  ["Mini panetone caseiro (caixa 24 un)", "R$ 64,90 / caixa"],
                   ["Caixa Bauducco 400g (10 un)", "R$ 144,90 a R$ 154,90"],
                   ["Caixa Bauducco mini 80g (24 un)", "R$ 74,90 a R$ 86,90"],
                 ].map(([k, v]) => (
@@ -157,8 +179,14 @@ export default function AtacadoPanetonePage() {
       <TrustBar />
 
       {/* PRA QUEM É */}
-      <section className="section relative z-10">
-        <div className="container-app">
+      <section className="section relative z-10 overflow-hidden">
+        {/* panetones decorativos ao fundo */}
+        <div className="pointer-events-none absolute inset-0 text-clay-200/40">
+          <PanettoneIcon className="absolute -left-4 top-6 h-20 w-20 -rotate-12" />
+          <PanettoneIcon className="absolute right-2 top-24 h-14 w-14 rotate-6 text-sage-300/40" />
+          <PanettoneIcon className="absolute bottom-6 left-1/2 h-16 w-16 rotate-3" />
+        </div>
+        <div className="container-app relative">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow mb-3">Feito pra quem compra em quantidade</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
@@ -257,10 +285,17 @@ export default function AtacadoPanetonePage() {
               <div className="text-sm text-graphite-800">
                 <p className="font-extrabold text-clay-700">Como funciona o pedido (leia antes de enviar):</p>
                 <p className="mt-1">
-                  Todos os panetones são <strong>produzidos/separados sob encomenda</strong>. Para iniciar a
-                  produção do seu pedido é necessário um <strong>sinal de 50%</strong> do valor. O restante é
-                  acertado na entrega/retirada, conforme combinado no WhatsApp. Assim garantimos qualidade,
-                  frescor e a sua data.
+                  Pedido <strong>mínimo de {MIN_PIECES} unidades</strong>. Todos os panetones são{" "}
+                  <strong>produzidos/separados sob encomenda</strong>. Para iniciar a produção é necessário um{" "}
+                  <strong>sinal de 50%</strong> do valor; o restante é acertado na entrega, conforme combinado no
+                  WhatsApp.
+                </p>
+                <p className="mt-2 flex items-start gap-1.5">
+                  <Truck className="mt-0.5 h-4 w-4 shrink-0 text-clay-600" />
+                  <span>
+                    <strong>Enviamos para todo o Brasil</strong>, com <strong>pedido rastreável</strong>. Prazo{" "}
+                    <strong>a partir de 5 dias</strong> após o início da produção (confirmado no WhatsApp).
+                  </span>
                 </p>
               </div>
             </div>
@@ -269,8 +304,12 @@ export default function AtacadoPanetonePage() {
       </section>
 
       {/* COMO FUNCIONA */}
-      <section className="section relative z-10">
-        <div className="container-app">
+      <section className="section relative z-10 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 text-sage-200/40">
+          <PanettoneIcon className="absolute right-4 top-8 h-16 w-16 rotate-12" />
+          <PanettoneIcon className="absolute -left-3 bottom-8 h-20 w-20 -rotate-6 text-clay-200/40" />
+        </div>
+        <div className="container-app relative">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow mb-3">Simples e sem burocracia</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-graphite-950 sm:text-3xl">
@@ -282,7 +321,7 @@ export default function AtacadoPanetonePage() {
               { icon: FileText, t: "1. Monte o orçamento", d: "Escolha os produtos e quantidades aqui na página." },
               { icon: MessageCircle, t: "2. Fale no WhatsApp", d: "A gente confirma tudo e tira suas dúvidas com atendimento humano." },
               { icon: HandCoins, t: "3. Sinal de 50%", d: "Você paga o sinal e a gente inicia a produção do seu pedido." },
-              { icon: Truck, t: "4. Entrega combinada", d: "Entregamos na data certa e você acerta o restante." },
+              { icon: Truck, t: "4. Enviamos p/ todo o Brasil", d: "Pedido rastreável, prazo a partir de 5 dias após o início da produção." },
             ].map((s) => (
               <div key={s.t} className="card-surface p-5 text-center">
                 <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-clay-50 text-clay-600">
@@ -348,7 +387,11 @@ export default function AtacadoPanetonePage() {
             {[
               {
                 q: "Qual o pedido mínimo?",
-                a: "Trabalhamos com atacado, então o ideal é a partir de algumas dezenas de unidades. Monte seu orçamento na calculadora e, se tiver dúvida, chame no WhatsApp que a gente te orienta.",
+                a: `O pedido mínimo é de ${MIN_PIECES} unidades. Monte seu orçamento na calculadora — ela só libera o envio quando você atinge o mínimo. Dúvida? Chame no WhatsApp que a gente te orienta.`,
+              },
+              {
+                q: "Vocês entregam em todo o Brasil? O pedido é rastreável?",
+                a: "Sim! Enviamos para todo o Brasil e o seu pedido é rastreável — você acompanha a entrega. O prazo começa a partir de 5 dias após o início da produção; o prazo exato é confirmado no WhatsApp conforme a sua cidade e o volume.",
               },
               {
                 q: "Por que precisa de sinal de 50%?",
@@ -356,7 +399,7 @@ export default function AtacadoPanetonePage() {
               },
               {
                 q: "Qual o prazo de produção e entrega?",
-                a: "Depende do volume e da data desejada. Por isso é importante se organizar com antecedência — em dezembro as vagas de produção se esgotam. Combinamos o prazo exato no WhatsApp.",
+                a: "O prazo começa a partir de 5 dias após o início da produção (que arranca com o sinal de 50%), e varia conforme o volume e a sua cidade. Em dezembro as vagas de produção se esgotam, então quanto antes fechar, melhor. Combinamos o prazo exato no WhatsApp.",
               },
               {
                 q: "Vocês emitem nota fiscal?",

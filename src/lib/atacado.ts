@@ -20,11 +20,14 @@ export type Tier = { min: number; max: number | null; cents: number; label: stri
 
 /** A faixa é definida pelo TOTAL de unidades caseiras 400g (panetone + chocotone). */
 export const CASEIRO_400_TIERS: Tier[] = [
-  { min: 1, max: 100, cents: 765, label: "Até 100 un" },
-  { min: 101, max: 500, cents: 689, label: "101 a 500 un" },
-  { min: 501, max: 1000, cents: 592, label: "501 a 1.000 un" },
-  { min: 1001, max: null, cents: 487, label: "Acima de 1.000 un" },
+  { min: 1, max: 100, cents: 665, label: "Até 100 un" },
+  { min: 101, max: 500, cents: 589, label: "101 a 500 un" },
+  { min: 501, max: 1000, cents: 492, label: "501 a 1.000 un" },
+  { min: 1001, max: null, cents: 387, label: "Acima de 1.000 un" },
 ];
+
+/** Pedido mínimo da campanha, em unidades (peças de panetone). */
+export const MIN_PIECES = 50;
 
 export function tierForQty(qty: number): Tier {
   if (qty <= 0) return CASEIRO_400_TIERS[0];
@@ -82,7 +85,7 @@ export const SKUS: Sku[] = [
     unit: "cx",
     boxSize: 24,
     priceMode: "fixed",
-    fixedCents: 8856,
+    fixedCents: 6490,
   },
   {
     id: "cas_mini_cho",
@@ -163,6 +166,10 @@ export type Quote = {
   sinalCents: number;
   totalPieces: number;
   hasItems: boolean;
+  /** pedido atingiu o mínimo de MIN_PIECES unidades. */
+  meetsMinimum: boolean;
+  /** quantas peças ainda faltam p/ o mínimo (0 se já atingiu). */
+  piecesToMinimum: number;
 };
 
 function sanitizeQty(v: unknown): number {
@@ -215,6 +222,8 @@ export function computeQuote(raw: Quantities): Quote {
     sinalCents,
     totalPieces,
     hasItems: lines.length > 0,
+    meetsMinimum: totalPieces >= MIN_PIECES,
+    piecesToMinimum: Math.max(0, MIN_PIECES - totalPieces),
   };
 }
 

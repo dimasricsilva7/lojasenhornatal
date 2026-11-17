@@ -11,6 +11,7 @@ import {
   BUYER_TYPES,
   buildWhatsAppText,
   whatsappHref,
+  MIN_PIECES,
   type Quantities,
 } from "@/lib/atacado";
 import { readAttribution } from "@/components/TrackingCapture";
@@ -87,12 +88,19 @@ export default function QuoteBuilder() {
 
   const setSku = (id: string, n: number) => setQty((prev) => ({ ...prev, [id]: n }));
 
-  const canSubmit = quote.hasItems && name.trim().length >= 2 && phone.trim().length >= 8 && ack;
+  const canSubmit =
+    quote.hasItems && quote.meetsMinimum && name.trim().length >= 2 && phone.trim().length >= 8 && ack;
 
   async function handleSubmit() {
     setError(null);
     if (!quote.hasItems) {
       setError("Escolha ao menos um produto para montar o orçamento.");
+      return;
+    }
+    if (!quote.meetsMinimum) {
+      setError(
+        `Pedido mínimo de ${MIN_PIECES} unidades. Faltam ${formatInt(quote.piecesToMinimum)} un.`
+      );
       return;
     }
     if (name.trim().length < 2 || phone.trim().length < 8) {
@@ -148,7 +156,28 @@ export default function QuoteBuilder() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_minmax(320px,380px)]">
+    <div>
+      {/* Mobile: total + progresso do mínimo sempre visível no topo enquanto escolhe */}
+      <div className="sticky top-0 z-30 mb-4 flex items-center justify-between gap-3 rounded-xl2 border border-graphite-900/10 bg-white/95 px-4 py-2.5 shadow-card backdrop-blur lg:hidden">
+        <div className="leading-none">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-graphite-500">Seu orçamento</p>
+          <p className="text-xl font-extrabold text-graphite-950">{formatBRL(quote.totalCents)}</p>
+        </div>
+        {!quote.hasItems ? (
+          <span className="text-[11px] font-semibold text-graphite-500">Pedido mínimo: {MIN_PIECES} un</span>
+        ) : quote.meetsMinimum ? (
+          <span className="rounded-full bg-sage-100 px-2.5 py-1 text-xs font-bold text-sage-700">
+            {formatInt(quote.totalPieces)} un ✓
+          </span>
+        ) : (
+          <span className="rounded-full bg-clay-50 px-2.5 py-1 text-right text-[11px] font-bold leading-tight text-clay-600">
+            Faltam {formatInt(quote.piecesToMinimum)} un
+            <br />p/ o mínimo ({MIN_PIECES})
+          </span>
+        )}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_minmax(320px,380px)]">
       {/* Coluna de seleção */}
       <div className="space-y-8">
         {GROUPS.map((group) => (
@@ -232,6 +261,11 @@ export default function QuoteBuilder() {
             {quote.totalCents > 0 && (
               <p className="mt-1 text-xs text-sage-200">
                 Sinal de 50% p/ iniciar: <strong>{formatBRL(quote.sinalCents)}</strong>
+              </p>
+            )}
+            {quote.hasItems && !quote.meetsMinimum && (
+              <p className="mt-2 rounded-lg bg-clay-600/90 px-2.5 py-1.5 text-xs font-semibold text-white">
+                Pedido mínimo de {MIN_PIECES} un — faltam {formatInt(quote.piecesToMinimum)} un.
               </p>
             )}
           </div>
@@ -342,6 +376,7 @@ export default function QuoteBuilder() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
