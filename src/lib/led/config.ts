@@ -33,8 +33,8 @@ export const MAIN = {
 
 // 6 order bumps (marcar no checkout). Preços em centavos.
 export const ORDER_BUMPS: LedItem[] = [
-  { slug: "led-bump-enfeites-vermelhos", name: "42 Enfeites Vermelhos para Árvore (pendentes)", priceCents: 3490, image: "https://down-br.img.susercontent.com/file/br-11134258-7r98o-man3asno1bll40", blurb: "Deixe a árvore ainda mais cheia com 42 pendentes vermelhos." },
-  { slug: "led-bump-enfeites-dourados", name: "42 Enfeites Dourados para Árvore (pendentes)", priceCents: 3490, image: "https://down-br.img.susercontent.com/file/br-11134258-7r98o-man3asno1bll40", blurb: "Toque elegante: 42 pendentes dourados." },
+  { slug: "led-bump-enfeites-vermelhos", name: "42 Enfeites Vermelhos para Árvore (pendentes)", priceCents: 3490, image: "https://down-br.img.susercontent.com/file/br-11134207-820lh-muyw5iuhc9he77@resize_w900_nl.webp", blurb: "Deixe a árvore ainda mais cheia com 42 pendentes vermelhos." },
+  { slug: "led-bump-enfeites-dourados", name: "42 Enfeites Dourados para Árvore (pendentes)", priceCents: 3490, image: "https://down-br.img.susercontent.com/file/br-11134207-820l8-muyw5iuhdo1uae.webp", blurb: "Toque elegante: 42 pendentes dourados." },
   { slug: "led-bump-pendentes-sortidos", name: "18 Pendentes Sortidos Natalinos 12cm", priceCents: 2990, image: "https://down-br.img.susercontent.com/file/sg-11134201-82597-ms5rmvbzssue69@resize_w900_nl.webp", blurb: "18 pendentes sortidos de 12cm para variar a decoração." },
   { slug: "led-bump-capas-almofadas", name: "Kit 4 Capas para Almofadas Natalinas 45x45cm", priceCents: 4490, image: "https://down-br.img.susercontent.com/file/br-11134207-820m2-mqz4129z2m8466@resize_w900_nl.webp", blurb: "Combine o sofá com a árvore: 4 capas natalinas 45x45." },
   { slug: "led-bump-cascata-estrela", name: "Luz LED Cascata Pisca-Pisca Estrela e Papai Noel (Bivolt)", priceCents: 3490, image: "https://down-br.img.susercontent.com/file/br-11134207-820ly-muapiypbbvnm11.webp", blurb: "Mais brilho na janela ou parede com a cascata LED." },
