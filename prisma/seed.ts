@@ -93,17 +93,18 @@ async function main() {
   // ── Campanha isolada: Árvore Espiral LED (/arvore-montada-led) ──
   // type COMPLEMENTARY + campaign => não aparece na home nem nos bumps/upsells da loja principal.
   const ledRows = [
-    { slug: LED_MAIN.slug, name: LED_MAIN.name, priceCents: LED_MAIN.priceCents, compareAtCents: LED_MAIN.compareAtCents as number | null, images: LED_MAIN.images, main: true },
-    ...LED_BUMPS.map((b) => ({ slug: b.slug, name: b.name, priceCents: b.priceCents, compareAtCents: null as number | null, images: [b.image], main: false })),
-    ...LED_UPSELLS.map((u) => ({ slug: u.slug, name: u.name, priceCents: u.priceCents, compareAtCents: null as number | null, images: [u.image], main: false })),
+    { slug: LED_MAIN.slug, name: LED_MAIN.name, priceCents: LED_MAIN.priceCents, compareAtCents: LED_MAIN.compareAtCents as number | null, images: LED_MAIN.images, main: true, type: "COMPLEMENTARY" as const, upsellEnabled: false },
+    ...LED_BUMPS.map((b) => ({ slug: b.slug, name: b.name, priceCents: b.priceCents, compareAtCents: null as number | null, images: [b.image], main: false, type: "COMPLEMENTARY" as const, upsellEnabled: false })),
+    // Upsells = ofertas pós-compra (rota /arvore-montada-led/oferta). Isolados por campaign.
+    ...LED_UPSELLS.map((u) => ({ slug: u.slug, name: u.name, priceCents: u.priceCents, compareAtCents: null as number | null, images: [u.image], main: false, type: "UPSELL" as const, upsellEnabled: true })),
   ];
   for (const r of ledRows) {
     await db.product.upsert({
       where: { slug: r.slug },
-      update: { campaign: LED_CAMPAIGN, images: r.images },
+      update: { campaign: LED_CAMPAIGN, images: r.images, type: r.type, upsellEnabled: r.upsellEnabled },
       create: {
         slug: r.slug, name: r.name, priceCents: r.priceCents, compareAtCents: r.compareAtCents,
-        images: r.images, type: "COMPLEMENTARY", active: true, campaign: LED_CAMPAIGN,
+        images: r.images, type: r.type, active: true, campaign: LED_CAMPAIGN, upsellEnabled: r.upsellEnabled,
         bravopayProductId: r.main ? (process.env.BRAVOPAY_PRODUCT_ID ?? null) : null,
       },
     });

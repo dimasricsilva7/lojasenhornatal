@@ -1,14 +1,24 @@
 "use client";
 
 import { useMemo, useRef, useState, useEffect } from "react";
+import { Lock, Check, Loader2, ShieldCheck, Truck, Zap, QrCode } from "lucide-react";
 import { trackPixel } from "@/components/MetaPixel";
 import type { LedItem } from "@/lib/led/config";
 
 const brl = (c: number) => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+const digits = (s: string) => s.replace(/\D/g, "");
+const maskCPF = (s: string) =>
+  digits(s).slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+const maskPhone = (s: string) => {
+  const d = digits(s).slice(0, 11);
+  if (d.length <= 10) return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+};
+const maskCEP = (s: string) => digits(s).slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
 
 type Props = {
-  main: { slug: string; name: string; priceCents: number; compareAtCents: number };
+  main: { slug: string; name: string; priceCents: number; compareAtCents: number; image?: string };
   bumps: LedItem[];
   upsells: LedItem[];
 };
@@ -19,11 +29,13 @@ export default function LedClient({ main, bumps, upsells }: Props) {
   const [step, setStep] = useState<Step>("closed");
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const eventId = useRef<string>("");
+  const numberRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: "", email: "", cpf: "", phone: "",
     zip: "", address: "", number: "", complement: "", neighborhood: "", city: "", state: "",
   });
+  const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pix, setPix] = useState<{ displayId: string; copyPaste: string | null; total: number } | null>(null);
@@ -33,7 +45,8 @@ export default function LedClient({ main, bumps, upsells }: Props) {
 
   const addons = useMemo(() => [...bumps, ...upsells], [bumps, upsells]);
   const selectedSlugs = addons.filter((a) => selected[a.slug]).map((a) => a.slug);
-  const total = main.priceCents + addons.filter((a) => selected[a.slug]).reduce((s, a) => s + a.priceCents, 0);
+  const extras = addons.filter((a) => selected[a.slug]).reduce((s, a) => s + a.priceCents, 0);
+  const total = main.priceCents + extras;
 
   function openCheckout() {
     eventId.current = uuid();
@@ -50,14 +63,31 @@ export default function LedClient({ main, bumps, upsells }: Props) {
     });
   }
 
-  async function lookupCep(cep: string) {
-    const clean = cep.replace(/\D/g, "");
+  async function lookupCep(cepRaw: string) {
+    const clean = digits(cepRaw);
     if (clean.length !== 8) return;
+    setCepStatus("loading");
     try {
       const r = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
       const d = await r.json();
-      if (!d.erro) setForm((f) => ({ ...f, address: d.logradouro || f.address, neighborhood: d.bairro || f.neighborhood, city: d.localidade || f.city, state: d.uf || f.state }));
-    } catch { /* silencioso */ }
+      if (d.erro) { setCepStatus("fail"); return; }
+      setForm((f) => ({
+        ...f,
+        address: d.logradouro || f.address,
+        neighborhood: d.bairro || f.neighborhood,
+        city: d.localidade || f.city,
+        state: d.uf || f.state,
+      }));
+      setCepStatus("ok");
+      setTimeout(() => numberRef.current?.focus(), 60);
+    } catch { setCepStatus("fail"); }
+  }
+
+  function onCepChange(v: string) {
+    const masked = maskCEP(v);
+    setForm((f) => ({ ...f, zip: masked }));
+    if (cepStatus !== "idle") setCepStatus("idle");
+    if (digits(masked).length === 8) lookupCep(masked);
   }
 
   async function submit(e: React.FormEvent) {
@@ -97,7 +127,7 @@ export default function LedClient({ main, bumps, upsells }: Props) {
         const d = await r.json();
         if (!active) return;
         if (d.pixCopyPaste && !pix.copyPaste) setPix((p) => (p ? { ...p, copyPaste: d.pixCopyPaste } : p));
-        if (d.status === "PAID") { setPaid(true); window.location.href = `/pedido/sucesso/${pix.displayId}`; }
+        if (d.status === "PAID") { setPaid(true); window.location.href = `/arvore-montada-led/oferta/${pix.displayId}`; }
       } catch { /* continua */ }
     };
     const id = setInterval(tick, 4000);
@@ -111,7 +141,10 @@ export default function LedClient({ main, bumps, upsells }: Props) {
     import("qrcode").then((QR) => QR.toDataURL(pix.copyPaste as string, { width: 240, margin: 1 }).then(setQr).catch(() => {}));
   }, [pix?.copyPaste]);
 
-  const canSubmit = form.name.length > 2 && /\S+@\S+/.test(form.email) && form.cpf.replace(/\D/g, "").length === 11 && form.phone.replace(/\D/g, "").length >= 10 && form.zip.replace(/\D/g, "").length === 8 && form.address && form.number && form.neighborhood && form.city && form.state.length === 2;
+  const canSubmit =
+    form.name.trim().length > 2 && /\S+@\S+\.\S+/.test(form.email) && digits(form.cpf).length === 11 &&
+    digits(form.phone).length >= 10 && digits(form.zip).length === 8 && !!form.address && !!form.number &&
+    !!form.neighborhood && !!form.city && form.state.length === 2;
 
   return (
     <>
@@ -129,56 +162,108 @@ export default function LedClient({ main, bumps, upsells }: Props) {
             <button className="led-close" onClick={() => setStep("closed")} aria-label="Fechar">×</button>
 
             {step === "form" && (
-              <form onSubmit={submit} className="space-y-4">
-                <h3 className="text-lg font-extrabold text-graphite-950">Finalize seu pedido</h3>
+              <form onSubmit={submit} className="space-y-5">
+                <div>
+                  <h3 className="text-xl font-extrabold tracking-tight text-graphite-950">Finalize seu pedido</h3>
+                  <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-graphite-500">
+                    <Lock className="h-3.5 w-3.5 text-emerald-600" /> Pagamento 100% seguro · leva menos de 1 minuto
+                  </p>
+                </div>
 
-                {/* Order bumps + upsells */}
+                {/* Resumo do pedido */}
+                <div className="flex items-center gap-3 rounded-2xl bg-cream-50 p-3 ring-1 ring-graphite-900/5">
+                  {main.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={main.image} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold leading-snug text-graphite-950 line-clamp-2">{main.name}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-base font-extrabold text-[#c0392b]">{brl(main.priceCents)}</span>
+                      <span className="text-xs text-graphite-400 line-through">{brl(main.compareAtCents)}</span>
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">FRETE GRÁTIS</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order bumps (os upsells são oferecidos DEPOIS da compra, não aqui). */}
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-graphite-500">Leve junto (opcional)</p>
-                  {addons.map((a) => (
-                    <label key={a.slug} className={`led-addon ${selected[a.slug] ? "led-addon-on" : ""}`}>
-                      <input type="checkbox" checked={!!selected[a.slug]} onChange={() => toggle(a.slug, a.priceCents)} />
-                      <img src={a.image} alt="" loading="lazy" />
-                      <span className="flex-1">
-                        <span className="block text-sm font-medium leading-tight text-graphite-950">{a.name}</span>
-                        <span className="text-sm font-bold text-emerald-700">+ {brl(a.priceCents)}</span>
-                      </span>
-                    </label>
-                  ))}
+                  <p className="text-sm font-bold text-graphite-950">🎁 Aproveite e leve junto</p>
+                  {bumps.map((a) => {
+                    const on = !!selected[a.slug];
+                    return (
+                      <button
+                        key={a.slug}
+                        type="button"
+                        onClick={() => toggle(a.slug, a.priceCents)}
+                        aria-pressed={on}
+                        className={`flex w-full items-center gap-3 rounded-xl border-[1.5px] p-2.5 text-left transition ${on ? "border-emerald-500 bg-emerald-50" : "border-graphite-900/10 bg-white hover:border-graphite-900/20"}`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={a.image} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold leading-tight text-graphite-950">{a.name}</span>
+                          <span className="text-sm font-bold text-emerald-700">+ {brl(a.priceCents)}</span>
+                        </span>
+                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition ${on ? "border-emerald-500 bg-emerald-500 text-white" : "border-graphite-300"}`}>
+                          {on && <Check className="h-4 w-4" strokeWidth={3} />}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  <Input label="Nome completo" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+                {/* Seus dados */}
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-graphite-500">Seus dados</p>
+                  <Input label="Nome completo" value={form.name} onChange={(v) => setForm({ ...form, name: v })} autoComplete="name" placeholder="Seu nome" />
                   <div className="grid grid-cols-2 gap-3">
-                    <Input label="E-mail" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                    <Input label="WhatsApp" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} placeholder="(11) 90000-0000" />
+                    <Input label="E-mail" type="email" inputMode="email" autoComplete="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="voce@email.com" />
+                    <Input label="WhatsApp" type="tel" inputMode="numeric" autoComplete="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: maskPhone(v) })} placeholder="(11) 90000-0000" />
                   </div>
-                  <Input label="CPF" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: v })} placeholder="000.000.000-00" />
+                  <Input label="CPF" inputMode="numeric" autoComplete="off" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: maskCPF(v) })} placeholder="000.000.000-00" />
+                </div>
+
+                {/* Entrega */}
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-graphite-500">Endereço de entrega</p>
                   <div className="grid grid-cols-3 gap-3">
-                    <Input label="CEP" value={form.zip} onChange={(v) => { setForm({ ...form, zip: v }); }} onBlur={() => lookupCep(form.zip)} />
-                    <div className="col-span-2"><Input label="Endereço" value={form.address} onChange={(v) => setForm({ ...form, address: v })} /></div>
+                    <Input
+                      label="CEP" inputMode="numeric" autoComplete="postal-code" value={form.zip}
+                      onChange={onCepChange} onBlur={() => lookupCep(form.zip)} placeholder="00000-000"
+                      right={cepStatus === "loading" ? <Loader2 className="h-4 w-4 animate-spin text-graphite-400" /> : cepStatus === "ok" ? <Check className="h-4 w-4 text-emerald-600" /> : undefined}
+                    />
+                    <div className="col-span-2"><Input label="Endereço" autoComplete="address-line1" value={form.address} onChange={(v) => setForm({ ...form, address: v })} placeholder="Rua / Avenida" /></div>
                   </div>
+                  {cepStatus === "fail" && <p className="-mt-1 text-xs text-amber-700">CEP não encontrado — preencha o endereço manualmente.</p>}
                   <div className="grid grid-cols-3 gap-3">
-                    <Input label="Número" value={form.number} onChange={(v) => setForm({ ...form, number: v })} />
-                    <div className="col-span-2"><Input label="Complemento" value={form.complement} onChange={(v) => setForm({ ...form, complement: v })} /></div>
+                    <Input label="Número" inputMode="numeric" autoComplete="off" value={form.number} onChange={(v) => setForm({ ...form, number: v })} inputRef={numberRef} placeholder="123" />
+                    <div className="col-span-2"><Input label="Complemento" value={form.complement} onChange={(v) => setForm({ ...form, complement: v })} placeholder="Apto, bloco (opcional)" /></div>
                   </div>
-                  <Input label="Bairro" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} />
+                  <Input label="Bairro" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} placeholder="Seu bairro" />
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2"><Input label="Cidade" value={form.city} onChange={(v) => setForm({ ...form, city: v })} /></div>
-                    <Input label="UF" value={form.state} onChange={(v) => setForm({ ...form, state: v.toUpperCase().slice(0, 2) })} />
+                    <div className="col-span-2"><Input label="Cidade" autoComplete="address-level2" value={form.city} onChange={(v) => setForm({ ...form, city: v })} placeholder="Sua cidade" /></div>
+                    <Input label="UF" value={form.state} onChange={(v) => setForm({ ...form, state: v.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2) })} placeholder="SP" />
                   </div>
                 </div>
 
-                {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+                {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{error}</p>}
 
-                <div className="flex items-center justify-between border-t border-graphite-900/10 pt-3">
-                  <span className="text-sm text-graphite-600">Total</span>
-                  <span className="text-xl font-extrabold text-graphite-950">{brl(total)}</span>
+                {/* Rodapé fixo com total + CTA */}
+                <div className="sticky bottom-0 z-10 -mx-[22px] -mb-[22px] border-t border-graphite-900/10 bg-white/95 px-[22px] pb-5 pt-3 backdrop-blur">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm text-graphite-600">Total {extras > 0 ? "(com extras)" : ""}</span>
+                    <span className="text-xl font-extrabold text-graphite-950">{brl(total)}</span>
+                  </div>
+                  <button type="submit" disabled={!canSubmit || loading} className="led-btn-primary flex w-full items-center justify-center gap-2 text-base disabled:cursor-not-allowed disabled:opacity-50">
+                    {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> Gerando PIX…</> : <><QrCode className="h-5 w-5" /> Pagar com PIX · {brl(total)}</>}
+                  </button>
+                  <div className="mt-2 flex items-center justify-center gap-3 text-[11px] font-medium text-graphite-500">
+                    <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Compra segura</span>
+                    <span className="flex items-center gap-1"><Zap className="h-3.5 w-3.5 text-amber-500" /> Aprovação na hora</span>
+                    <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-graphite-500" /> Frete grátis</span>
+                  </div>
                 </div>
-                <button type="submit" disabled={!canSubmit || loading} className="led-btn-primary w-full disabled:opacity-50">
-                  {loading ? "Gerando PIX…" : `Gerar PIX · ${brl(total)}`}
-                </button>
-                <p className="text-center text-xs text-graphite-500">Pagamento via PIX · aprovação na hora · dados protegidos</p>
               </form>
             )}
 
@@ -210,12 +295,40 @@ export default function LedClient({ main, bumps, upsells }: Props) {
   );
 }
 
-function Input({ label, value, onChange, type = "text", placeholder, onBlur }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; onBlur?: () => void }) {
+function Input({
+  label, value, onChange, type = "text", placeholder, onBlur, inputMode, autoComplete, right, inputRef, maxLength,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  onBlur?: () => void;
+  inputMode?: "text" | "numeric" | "email" | "tel";
+  autoComplete?: string;
+  right?: React.ReactNode;
+  inputRef?: React.RefObject<HTMLInputElement>;
+  maxLength?: number;
+}) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-graphite-600">{label}</span>
-      <input type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} onBlur={onBlur}
-        className="w-full rounded-lg border border-graphite-900/15 px-3 py-2.5 text-sm outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20" />
+      <span className="mb-1 block text-xs font-semibold text-graphite-600">{label}</span>
+      <div className="relative">
+        {/* text-base (16px) evita o zoom automático do iOS ao focar o campo */}
+        <input
+          ref={inputRef}
+          type={type}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          className="w-full rounded-xl border border-graphite-900/15 bg-white px-3.5 py-3 text-base text-graphite-950 outline-none transition placeholder:text-graphite-400 focus:border-[#c0392b] focus:ring-2 focus:ring-[#c0392b]/15"
+        />
+        {right && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">{right}</span>}
+      </div>
     </label>
   );
 }

@@ -169,7 +169,7 @@ export default function LedPage() {
         </section>
       </div>
 
-      <LedClient main={{ slug: MAIN.slug, name: MAIN.name, priceCents: MAIN.priceCents, compareAtCents: MAIN.compareAtCents }} bumps={ORDER_BUMPS} upsells={UPSELLS} />
+      <LedClient main={{ slug: MAIN.slug, name: MAIN.name, priceCents: MAIN.priceCents, compareAtCents: MAIN.compareAtCents, image: MAIN.images[0] }} bumps={ORDER_BUMPS} upsells={UPSELLS} />
     </main>
   );
 }

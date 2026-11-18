@@ -27,7 +27,8 @@ export async function sizeContext(orderId: string) {
 export async function getOfferSequence(order: { id: string }) {
   const [offers, paid, ctx] = await Promise.all([
     db.product.findMany({
-      where: { type: { in: ["UPSELL", "DOWNSELL"] }, active: true, upsellEnabled: true },
+      // campaign: null => só ofertas da loja principal (upsells de campanhas isoladas têm fluxo próprio).
+      where: { type: { in: ["UPSELL", "DOWNSELL"] }, active: true, upsellEnabled: true, campaign: null },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     }),
     db.orderItem.findMany({
