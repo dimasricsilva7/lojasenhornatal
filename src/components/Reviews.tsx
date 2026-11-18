@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Star, BadgeCheck } from "lucide-react";
+import { formatReviewCount } from "@/lib/reviews";
 
 export type ReviewItem = {
   id: string;
@@ -47,7 +48,7 @@ export default function Reviews({
             </span>
             <span className="text-sm font-bold text-graphite-950">{stats.avg.toFixed(1).replace(".", ",")}/5</span>
             <span className="text-sm text-graphite-700/70">
-              · {stats.count} {stats.count === 1 ? "avaliação" : "avaliações"}
+              · {formatReviewCount(stats.count)} avaliações
             </span>
           </div>
         </div>

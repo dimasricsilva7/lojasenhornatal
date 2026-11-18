@@ -23,12 +23,14 @@ export default function HowToVideo({ src }: { src: string }) {
   return (
     <video
       ref={ref}
-      src={src}
+      // #t=0.1 força o navegador a mostrar o 1º frame como poster (senão fica tela preta no iOS).
+      src={src.includes("#") ? src : `${src}#t=0.1`}
       className="aspect-[9/16] h-auto w-full object-cover"
       muted
       loop
+      autoPlay
       playsInline
-      preload="none"
+      preload="metadata"
     />
   );
 }

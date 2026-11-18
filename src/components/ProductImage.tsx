@@ -18,7 +18,7 @@ export default function ProductImage({
       className={`relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-xl2 bg-white shadow-lift ring-1 ring-graphite-950/[0.05] sm:max-w-lg ${className}`}
     >
       {src ? (
-        <Image src={src} alt={alt} fill priority={priority} sizes="(max-width: 768px) 90vw, 520px" className="object-cover" />
+        <Image src={src} alt={alt} fill priority={priority} sizes="(max-width: 768px) 90vw, 520px" className="object-contain" />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-sage-50 text-sage-600">
           <TreePine className="h-24 w-24" strokeWidth={1.25} />

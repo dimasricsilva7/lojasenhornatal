@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import TrustBar from "@/components/TrustBar";
 import SizeSelector, { type SizeOption } from "@/components/SizeSelector";
 import ProductImage from "@/components/ProductImage";
+import { formatReviewCount } from "@/lib/reviews";
 import type { SettingsMap } from "@/lib/settings";
 
 export default function Hero({
@@ -45,7 +46,7 @@ export default function Hero({
                 ))}
               </span>
               <span className="font-bold text-white">{reviewStats.avg.toFixed(1).replace(".", ",")}/5</span>
-              <span className="text-white/70">· {reviewStats.count} avaliações de clientes</span>
+              <span className="text-white/70">· {formatReviewCount(reviewStats.count)} avaliações de clientes</span>
             </div>
           )}
 

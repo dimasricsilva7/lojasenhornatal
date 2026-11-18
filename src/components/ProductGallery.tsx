@@ -15,7 +15,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           {list.map((src, i) => (
             <div key={src} className="relative aspect-square overflow-hidden rounded-xl2 bg-cream-100 shadow-card">
-              <Image src={src} alt={`Árvore de Natal montada — foto ${i + 1}`} fill sizes="(max-width: 768px) 45vw, 360px" className="object-cover" />
+              <Image src={src} alt={`Árvore de Natal montada — foto ${i + 1}`} fill sizes="(max-width: 768px) 45vw, 360px" className="object-contain" />
             </div>
           ))}
         </div>

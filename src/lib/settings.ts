@@ -105,6 +105,9 @@ export async function getSettings(): Promise<SettingsMap> {
   const rows = await db.setting.findMany();
   const map: SettingsMap = { ...DEFAULT_SETTINGS };
   for (const row of rows) map[row.key] = row.value;
+  // shipping_days é usado como "Entrega em {shipping_days} dias úteis" em vários lugares.
+  // Se o admin salvou o valor já com a unidade ("7 dias úteis"), remove para não duplicar.
+  if (map.shipping_days) map.shipping_days = map.shipping_days.replace(/\s*dias?\s*[úu]te(?:is|il)\s*$/i, "").trim();
   return map;
 }
 

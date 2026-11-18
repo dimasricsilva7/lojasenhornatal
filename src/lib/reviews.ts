@@ -1,5 +1,10 @@
 import { db } from "@/lib/db";
 
+/** Exibe contagens grandes como "+5 mil" (prova social). */
+export function formatReviewCount(n: number) {
+  return n >= 1000 ? `+${Math.floor(n / 1000)} mil` : String(n);
+}
+
 export async function getPublishedReviewStats() {
   const published = await db.review.findMany({
     where: { published: true },

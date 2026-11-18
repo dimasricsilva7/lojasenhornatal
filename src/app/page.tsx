@@ -29,7 +29,7 @@ export default async function HomePage() {
     getSettings(),
     getSizes(),
     getPublishedReviewStats(),
-    getPublishedReviews(),
+    getPublishedReviews(10),
     getPublishedReviewPhotos(),
     db.socialProof.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }], take: 30 }),
   ]);
@@ -67,6 +67,8 @@ export default async function HomePage() {
   const fromPriceCents = Math.min(...mainProducts.map((p) => p.priceCents));
   const allImages = mainProducts.flatMap((p) => p.images);
   const deadline = settings.christmas_deadline?.trim() || undefined;
+  // Prova social: exibe "+5 mil avaliações" mantendo a nota (média) real.
+  const reviewStatsDisplay = { avg: reviewStats.avg, count: 5000 };
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const abs = (img: string) => (img.startsWith("http") ? img : `${siteUrl}${img}`);
 
@@ -95,14 +97,14 @@ export default async function HomePage() {
       <Snowfall />
       <ViewContentTracker productId={defaultProduct.id} productName={defaultProduct.name} priceCents={defaultProduct.priceCents} />
       <SiteHeader storeName={settings.store_name} shippingDays={settings.shipping_days} deadline={deadline} />
-      <Hero sizes={sizes} defaultSlug={defaultProduct.slug} reviewStats={reviewStats} settings={settings} />
+      <Hero sizes={sizes} defaultSlug={defaultProduct.slug} reviewStats={reviewStatsDisplay} settings={settings} />
       <ProblemSection settings={settings} />
       <HowItWorksSection mediaUrl={settings.demo_video_url || undefined} settings={settings} />
       <WhatsInTheBox items={settings.box_items} imageUrl={settings.box_image_url || null} settings={settings} />
       <ProductGallery images={allImages} />
       <SocialProof items={proofs.map((p) => ({ id: p.id, mediaType: p.mediaType, url: p.url, caption: p.caption, name: p.name, city: p.city }))} />
       <Comparison settings={settings} />
-      <Reviews reviews={reviews} stats={reviewStats} />
+      <Reviews reviews={reviews} stats={reviewStatsDisplay} />
       <CustomerPhotos
         photos={reviewPhotos
           .filter((r) => r.photoUrl)
