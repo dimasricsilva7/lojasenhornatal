@@ -58,6 +58,7 @@ model Product {
   id                String      @id @default(cuid())
   name              String
   slug              String      @unique
+  campaign          String?     // null = loja principal (home); "arvore-led" = campanha isolada
   description       String?
   priceCents        Int
   compareAtCents    Int?
@@ -97,6 +98,7 @@ model Customer {
 model Order {
   id                String      @id @default(cuid())
   displayId         String      @unique
+  campaign          String?     // isola pedidos por campanha; null = loja principal
   customerId        String
   customer          Customer    @relation(fields: [customerId], references: [id])
   status            OrderStatus @default(CREATED)
@@ -123,6 +125,8 @@ model Order {
 
   paidAt            DateTime?
   pixelPurchaseFiredAt DateTime?
+  trackingCode      String?     // código de rastreio Translog
+  trackingStatus    String?     // processed | pending_credits | error
   lastCheckedAt     DateTime?
   isUpsellOrder     Boolean     @default(false)
   parentOrderId     String?

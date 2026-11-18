@@ -47,3 +47,17 @@ body {
 .card-surface {
   @apply rounded-xl2 bg-white shadow-card ring-1 ring-graphite-950/[0.04];
 }
+
+/* ───────── Campanha Árvore Espiral LED (/arvore-montada-led) ───────── */
+.led-cta-fixed { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 50; width: calc(100% - 28px); max-width: 520px; background: linear-gradient(90deg,#c0392b,#e24a3b); color:#fff; font-weight:800; letter-spacing:.3px; padding:16px; border-radius:14px; box-shadow:0 10px 30px rgba(192,57,43,.35); animation: ledpulse 2.2s infinite; }
+@keyframes ledpulse { 0%,100%{ box-shadow:0 10px 30px rgba(192,57,43,.35);} 50%{ box-shadow:0 10px 40px rgba(192,57,43,.6);} }
+.led-btn-primary { background: linear-gradient(90deg,#c0392b,#e24a3b); color:#fff; font-weight:800; padding:14px 20px; border-radius:12px; }
+.led-btn-gold { background: linear-gradient(90deg,#b8860b,#e0b84c); color:#1a1a1a; font-weight:800; padding:14px 20px; border-radius:12px; }
+.led-overlay { position:fixed; inset:0; z-index:60; background:rgba(15,15,15,.6); display:flex; align-items:flex-end; justify-content:center; padding:0; }
+.led-sheet { position:relative; width:100%; max-width:560px; max-height:94vh; overflow-y:auto; background:#fff; border-radius:20px 20px 0 0; padding:22px; }
+@media (min-width:640px){ .led-overlay{ align-items:center; } .led-sheet{ border-radius:20px; } }
+.led-close { position:absolute; right:14px; top:10px; font-size:26px; line-height:1; color:#888; background:none; }
+.led-addon { display:flex; align-items:center; gap:10px; border:1.5px solid rgba(0,0,0,.1); border-radius:12px; padding:8px 10px; cursor:pointer; transition:.15s; }
+.led-addon img { width:46px; height:46px; object-fit:cover; border-radius:8px; }
+.led-addon input { width:18px; height:18px; accent-color:#c0392b; }
+.led-addon-on { border-color:#16a34a; background:#f0fdf4; }

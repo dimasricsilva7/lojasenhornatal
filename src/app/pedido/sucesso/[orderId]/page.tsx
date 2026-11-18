@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/pricing";
 import PurchaseTracker from "./PurchaseTracker";
 import { claimPurchasePixel } from "@/lib/purchase-pixel";
 import { confirmInfinitePayOrder } from "@/lib/order-status";
+import { TRANSLOG_TRACK_URL } from "@/lib/translog";
 
 export const dynamic = "force-dynamic";
 
@@ -151,6 +152,36 @@ export default async function OrderSuccessPage({
             </div>
           </div>
         </div>
+
+        {/* Rastreio do pedido (transportadora) */}
+        {isPaid && order.trackingCode && (
+          <div className="mt-6 overflow-hidden rounded-xl2 bg-white shadow-card ring-1 ring-graphite-900/5">
+            <div className="flex flex-col items-center gap-3 p-6 text-center">
+              <div className="flex items-center gap-2 text-graphite-950">
+                <Truck className="h-5 w-5 text-amber-700" strokeWidth={1.75} />
+                <p className="text-base font-semibold">Seu pedido já tem código de rastreio</p>
+              </div>
+              <p className="text-sm text-graphite-800/70">Acompanhe a entrega pelo código abaixo:</p>
+              <p className="select-all rounded-lg bg-cream-100 px-4 py-2 text-lg font-extrabold tracking-wider text-graphite-950">
+                {order.trackingCode}
+              </p>
+              <a
+                href={`${TRANSLOG_TRACK_URL}?codigo=${encodeURIComponent(order.trackingCode)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
+                Rastrear meu pedido
+              </a>
+            </div>
+          </div>
+        )}
+        {isPaid && !order.trackingCode && (
+          <div className="mt-6 rounded-xl2 bg-amber-600/5 p-5 text-center text-sm text-graphite-800/70 ring-1 ring-amber-600/15">
+            <Truck className="mx-auto mb-2 h-5 w-5 text-amber-700" strokeWidth={1.75} />
+            Estamos gerando o código de rastreio do seu pedido. Ele aparece aqui nesta mesma página em instantes.
+          </div>
+        )}
 
         {/* Cards de detalhes */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">

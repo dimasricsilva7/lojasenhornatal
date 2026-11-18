@@ -5,6 +5,7 @@ import { checkPayment } from "@/lib/infinitepay";
 import { getStatus as mpGetStatus } from "@/lib/mercadopago";
 import { getStatus as pbGetStatus } from "@/lib/pagbank";
 import { sendMetaCapiEvent } from "@/lib/meta-capi";
+import { sendOrderToTranslog, translogEnabled } from "@/lib/translog";
 
 const STATUS_MAP: Record<BravopayTransaction["status"], Order["status"]> = {
   PENDING: "PENDING",
@@ -87,6 +88,13 @@ export async function recordOrderPaid(
         order_id: order.displayId,
       },
     }).catch(() => {});
+
+    // Transportadora Translog: envia o pedido pago e grava o código de rastreio.
+    // No-op se TRANSLOG_INGEST_URL/TRANSLOG_SECRET não estiverem configurados.
+    if (translogEnabled()) {
+      const mainItem = await db.orderItem.findFirst({ where: { orderId: order.id, kind: "main" }, select: { name: true } });
+      await sendOrderToTranslog(order, mainItem?.name ?? "Árvore de Natal");
+    }
   }
 }
 

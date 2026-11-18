@@ -1,5 +1,6 @@
 import { PrismaClient, ProductType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { MAIN as LED_MAIN, ORDER_BUMPS as LED_BUMPS, UPSELLS as LED_UPSELLS, CAMPAIGN as LED_CAMPAIGN } from "../src/lib/led/config";
 
 const db = new PrismaClient();
 
@@ -89,6 +90,26 @@ async function main() {
       },
     });
   }
+  // ── Campanha isolada: Árvore Espiral LED (/arvore-montada-led) ──
+  // type COMPLEMENTARY + campaign => não aparece na home nem nos bumps/upsells da loja principal.
+  const ledRows = [
+    { slug: LED_MAIN.slug, name: LED_MAIN.name, priceCents: LED_MAIN.priceCents, compareAtCents: LED_MAIN.compareAtCents as number | null, images: LED_MAIN.images, main: true },
+    ...LED_BUMPS.map((b) => ({ slug: b.slug, name: b.name, priceCents: b.priceCents, compareAtCents: null as number | null, images: [b.image], main: false })),
+    ...LED_UPSELLS.map((u) => ({ slug: u.slug, name: u.name, priceCents: u.priceCents, compareAtCents: null as number | null, images: [u.image], main: false })),
+  ];
+  for (const r of ledRows) {
+    await db.product.upsert({
+      where: { slug: r.slug },
+      update: { campaign: LED_CAMPAIGN },
+      create: {
+        slug: r.slug, name: r.name, priceCents: r.priceCents, compareAtCents: r.compareAtCents,
+        images: r.images, type: "COMPLEMENTARY", active: true, campaign: LED_CAMPAIGN,
+        bravopayProductId: r.main ? (process.env.BRAVOPAY_PRODUCT_ID ?? null) : null,
+      },
+    });
+  }
+  console.log(`Seed LED: ${ledRows.length} produtos (campanha ${LED_CAMPAIGN}).`);
+
   console.log(`Seed concluído: ${PRODUCTS.length} produtos.`);
 }
 
