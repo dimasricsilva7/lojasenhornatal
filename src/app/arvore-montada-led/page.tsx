@@ -4,7 +4,8 @@ import LedClient, { BuyButton } from "./LedClient";
 import Gallery from "./Gallery";
 import { MAIN, ORDER_BUMPS, UPSELLS, REVIEWS } from "@/lib/led/config";
 
-export const dynamic = "force-dynamic";
+// Conteúdo 100% do config (sem banco) → estática + cache de CDN = carregamento instantâneo, sem delay.
+export const dynamic = "force-static";
 
 const PRICE = MAIN.priceCents / 100;
 const COMPARE = MAIN.compareAtCents / 100;
@@ -75,7 +76,7 @@ export default function LedPage() {
 
         {/* ENTREGA / PAGAMENTO */}
         <section className="mt-3 divide-y divide-graphite-900/5 border-y border-graphite-900/5 px-4 text-sm">
-          <div className="flex items-center gap-2 py-2.5"><span>🚚</span><span className="text-graphite-700">Enviamos para <strong>todo o Brasil</strong> · código de rastreio após o pagamento</span></div>
+          <div className="flex items-center gap-2 py-2.5"><span>🚚</span><span className="text-graphite-700">Entrega em até <strong>7 dias úteis</strong> para todo o Brasil · código de rastreio após o pagamento</span></div>
           <div className="flex items-center gap-2 py-2.5"><span>🔒</span><span className="text-graphite-700">Pagamento via <strong>PIX</strong> com aprovação imediata</span></div>
           <div className="flex items-center gap-2 py-2.5"><span>🎁</span><span className="text-graphite-700">Enfeites decorativos <strong>inclusos</strong></span></div>
         </section>

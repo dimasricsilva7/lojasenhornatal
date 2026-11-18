@@ -36,6 +36,7 @@ export default function LedClient({ main, bumps, upsells }: Props) {
     zip: "", address: "", number: "", complement: "", neighborhood: "", city: "", state: "",
   });
   const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "ok" | "fail">("idle");
+  const [editAddr, setEditAddr] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pix, setPix] = useState<{ displayId: string; copyPaste: string | null; total: number } | null>(null);
@@ -141,6 +142,12 @@ export default function LedClient({ main, bumps, upsells }: Props) {
     import("qrcode").then((QR) => QR.toDataURL(pix.copyPaste as string, { width: 240, margin: 1 }).then(setQr).catch(() => {}));
   }, [pix?.copyPaste]);
 
+  // Entrega progressiva: começa só com o CEP; o endereço aparece após a busca.
+  const cepOk = cepStatus === "ok";
+  const hasStreet = form.address.trim().length > 0;
+  const showManualAddr = cepStatus === "fail" || editAddr || (cepOk && !hasStreet);
+  const showAddressDetails = cepOk || cepStatus === "fail" || editAddr;
+
   const canSubmit =
     form.name.trim().length > 2 && /\S+@\S+\.\S+/.test(form.email) && digits(form.cpf).length === 11 &&
     digits(form.phone).length >= 10 && digits(form.zip).length === 8 && !!form.address && !!form.number &&
@@ -224,27 +231,53 @@ export default function LedClient({ main, bumps, upsells }: Props) {
                   <Input label="CPF" inputMode="numeric" autoComplete="off" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: maskCPF(v) })} placeholder="000.000.000-00" />
                 </div>
 
-                {/* Entrega */}
+                {/* Entrega — começa só com o CEP; o endereço aparece preenchido após a busca */}
                 <div className="space-y-3">
                   <p className="text-xs font-bold uppercase tracking-wide text-graphite-500">Endereço de entrega</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Input
-                      label="CEP" inputMode="numeric" autoComplete="postal-code" value={form.zip}
-                      onChange={onCepChange} onBlur={() => lookupCep(form.zip)} placeholder="00000-000"
-                      right={cepStatus === "loading" ? <Loader2 className="h-4 w-4 animate-spin text-graphite-400" /> : cepStatus === "ok" ? <Check className="h-4 w-4 text-emerald-600" /> : undefined}
-                    />
-                    <div className="col-span-2"><Input label="Endereço" autoComplete="address-line1" value={form.address} onChange={(v) => setForm({ ...form, address: v })} placeholder="Rua / Avenida" /></div>
-                  </div>
-                  {cepStatus === "fail" && <p className="-mt-1 text-xs text-amber-700">CEP não encontrado — preencha o endereço manualmente.</p>}
-                  <div className="grid grid-cols-3 gap-3">
-                    <Input label="Número" inputMode="numeric" autoComplete="off" value={form.number} onChange={(v) => setForm({ ...form, number: v })} inputRef={numberRef} placeholder="123" />
-                    <div className="col-span-2"><Input label="Complemento" value={form.complement} onChange={(v) => setForm({ ...form, complement: v })} placeholder="Apto, bloco (opcional)" /></div>
-                  </div>
-                  <Input label="Bairro" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} placeholder="Seu bairro" />
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2"><Input label="Cidade" autoComplete="address-level2" value={form.city} onChange={(v) => setForm({ ...form, city: v })} placeholder="Sua cidade" /></div>
-                    <Input label="UF" value={form.state} onChange={(v) => setForm({ ...form, state: v.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2) })} placeholder="SP" />
-                  </div>
+                  <Input
+                    label="CEP" inputMode="numeric" autoComplete="postal-code" value={form.zip}
+                    onChange={onCepChange} onBlur={() => lookupCep(form.zip)} placeholder="Digite seu CEP"
+                    right={cepStatus === "loading" ? <Loader2 className="h-4 w-4 animate-spin text-graphite-400" /> : cepStatus === "ok" ? <Check className="h-4 w-4 text-emerald-600" /> : undefined}
+                  />
+                  {cepStatus === "idle" && !editAddr && (
+                    <button type="button" onClick={() => setEditAddr(true)} className="text-xs text-graphite-500 underline underline-offset-2">Não sei meu CEP</button>
+                  )}
+                  {cepStatus === "fail" && <p className="text-xs text-amber-700">CEP não encontrado — preencha o endereço abaixo.</p>}
+
+                  {/* Endereço encontrado pelo CEP (resumo) */}
+                  {cepOk && hasStreet && !editAddr && (
+                    <div className="flex items-start justify-between gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 ring-1 ring-emerald-500/20">
+                      <p className="text-sm leading-snug text-graphite-800">
+                        {form.address}
+                        <span className="mt-0.5 block text-graphite-500">{[form.neighborhood, form.city && `${form.city}/${form.state}`].filter(Boolean).join(" · ")}</span>
+                      </p>
+                      <button type="button" onClick={() => setEditAddr(true)} className="shrink-0 text-xs font-semibold text-emerald-700 underline">Alterar</button>
+                    </div>
+                  )}
+
+                  {/* Campos manuais (CEP sem rua, falha, ou "Alterar") */}
+                  {showManualAddr && (
+                    <>
+                      <Input label="Endereço" autoComplete="address-line1" value={form.address} onChange={(v) => setForm({ ...form, address: v })} placeholder="Rua / Avenida" />
+                      <Input label="Bairro" value={form.neighborhood} onChange={(v) => setForm({ ...form, neighborhood: v })} placeholder="Seu bairro" />
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-2"><Input label="Cidade" autoComplete="address-level2" value={form.city} onChange={(v) => setForm({ ...form, city: v })} placeholder="Cidade" /></div>
+                        <Input label="UF" value={form.state} onChange={(v) => setForm({ ...form, state: v.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2) })} placeholder="SP" />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Número + Complemento: aparecem assim que há endereço */}
+                  {showAddressDetails && (
+                    <div className="grid grid-cols-3 gap-3">
+                      <Input label="Número" inputMode="numeric" autoComplete="off" value={form.number} onChange={(v) => setForm({ ...form, number: v })} inputRef={numberRef} placeholder="123" />
+                      <div className="col-span-2"><Input label="Complemento" value={form.complement} onChange={(v) => setForm({ ...form, complement: v })} placeholder="Apto, bloco (opcional)" /></div>
+                    </div>
+                  )}
+
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-graphite-600">
+                    <Truck className="h-3.5 w-3.5 text-emerald-600" /> Entrega em até <strong className="text-graphite-800">7 dias úteis</strong> · frete grátis para todo o Brasil
+                  </p>
                 </div>
 
                 {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{error}</p>}
