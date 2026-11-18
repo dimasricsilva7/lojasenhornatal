@@ -10,6 +10,9 @@ const PRICE = MAIN.priceCents / 100;
 const COMPARE = MAIN.compareAtCents / 100;
 const OFF = Math.round((1 - MAIN.priceCents / MAIN.compareAtCents) * 100);
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// #t=0.1 força o 1º frame como poster (senão o vídeo fica preto no iOS).
+const poster = (u: string) => (u.includes("#") ? u : `${u}#t=0.1`);
+const REVIEW_COUNT_LABEL = "+5 mil"; // prova social: total exibido
 
 export const metadata: Metadata = {
   title: "Árvore de Natal Espiral LED 1,80m Dobrável com Enfeites",
@@ -64,7 +67,7 @@ export default function LedPage() {
             <span className="text-amber-500">★★★★★</span>
             <span>5,0</span>
             <span className="text-graphite-300">·</span>
-            <span>{REVIEWS.length} avaliações</span>
+            <span>{REVIEW_COUNT_LABEL} avaliações</span>
             <span className="text-graphite-300">·</span>
             <span>Pagamento no PIX</span>
           </div>
@@ -95,12 +98,18 @@ export default function LedPage() {
         {/* AVALIAÇÕES EM VÍDEO (mídia de clientes, estilo marketplace) */}
         <section className="px-4 py-4">
           <h2 className="mb-2 text-base font-bold text-graphite-950">Mídia dos clientes</h2>
-          <div className="flex snap-x gap-2 overflow-x-auto pb-1">
-            {videoReviews.map((r, i) => (
-              <div key={i} className="w-28 shrink-0 snap-start overflow-hidden rounded-lg bg-black" style={{ aspectRatio: "9 / 16" }}>
-                <video src={r.mediaUrl} muted loop playsInline autoPlay className="h-full w-full object-cover" />
-              </div>
-            ))}
+          {/* Marquee: as mídias passam continuamente para a esquerda; pausa ao passar o mouse. */}
+          <div className="group -mx-4 overflow-hidden px-4 [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
+            <div
+              className="flex w-max gap-2 py-1 motion-safe:animate-marquee group-hover:[animation-play-state:paused]"
+              style={{ animationDuration: `${Math.max(videoReviews.length * 6, 20)}s` }}
+            >
+              {[...videoReviews, ...videoReviews].map((r, i) => (
+                <div key={i} aria-hidden={i >= videoReviews.length} className="w-28 shrink-0 overflow-hidden rounded-lg bg-black" style={{ aspectRatio: "9 / 16" }}>
+                  <video src={poster(r.mediaUrl)} muted loop playsInline autoPlay preload="metadata" className="h-full w-full object-cover" />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -133,7 +142,7 @@ export default function LedPage() {
         {/* AVALIAÇÕES */}
         <section className="border-t border-graphite-900/5 px-4 py-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-bold text-graphite-950">Avaliações ({REVIEWS.length})</h2>
+            <h2 className="text-base font-bold text-graphite-950">Avaliações ({REVIEW_COUNT_LABEL})</h2>
             <span className="text-sm text-amber-500">★★★★★ <span className="text-graphite-500">5,0</span></span>
           </div>
           <div className="space-y-3">
@@ -141,7 +150,7 @@ export default function LedPage() {
               <div key={i} className="flex gap-3 border-b border-graphite-900/5 pb-3">
                 <div className="w-20 shrink-0 overflow-hidden rounded-lg bg-black" style={{ aspectRatio: "9 / 16" }}>
                   {r.mediaType === "video"
-                    ? <video src={r.mediaUrl} muted loop playsInline className="h-full w-full object-cover" />
+                    ? <video src={poster(r.mediaUrl)} muted loop playsInline autoPlay preload="metadata" className="h-full w-full object-cover" />
                     /* eslint-disable-next-line @next/next/no-img-element */
                     : <img src={r.mediaUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
                 </div>

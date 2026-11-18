@@ -100,7 +100,7 @@ async function main() {
   for (const r of ledRows) {
     await db.product.upsert({
       where: { slug: r.slug },
-      update: { campaign: LED_CAMPAIGN },
+      update: { campaign: LED_CAMPAIGN, images: r.images },
       create: {
         slug: r.slug, name: r.name, priceCents: r.priceCents, compareAtCents: r.compareAtCents,
         images: r.images, type: "COMPLEMENTARY", active: true, campaign: LED_CAMPAIGN,

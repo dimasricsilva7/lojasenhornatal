@@ -5,7 +5,13 @@ import { useState } from "react";
 type Media = { type: "video" | "image"; url: string };
 
 export default function Gallery({ video, images, off }: { video: string; images: string[]; off: number }) {
-  const media: Media[] = [{ type: "video", url: video }, ...images.map((u) => ({ type: "image" as const, url: u }))];
+  // 1ª imagem como principal, vídeo em 2º, demais imagens depois.
+  const [firstImage, ...restImages] = images;
+  const media: Media[] = [
+    ...(firstImage ? [{ type: "image" as const, url: firstImage }] : []),
+    { type: "video", url: video },
+    ...restImages.map((u) => ({ type: "image" as const, url: u })),
+  ];
   const [active, setActive] = useState(0);
   const cur = media[active];
 

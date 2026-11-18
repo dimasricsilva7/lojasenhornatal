@@ -21,13 +21,13 @@ export const MAIN = {
   name: "Árvore de Natal Espiral LED 1,80m com Estrela e Enfeites",
   priceCents: 6790,
   compareAtCents: 13225,
-  // Vídeo do produto (hero) + fotos reais (galeria).
+  // Vídeo do produto + fotos reais (galeria). A 1ª imagem é a principal; o vídeo vem em 2º.
   videoUrl: "https://down-bs-br.vod.susercontent.com/api/v4/11110105/mms/br-11110105-6v5dk-me18xh7j1s7615.16000081756543209.mp4",
   images: [
-    "https://down-br.img.susercontent.com/file/br-11134207-820me-mvgucvulue4j8c.webp",
-    "https://down-br.img.susercontent.com/file/br-11134207-820l9-mvgucvuuxp8gab.webp",
-    "https://down-br.img.susercontent.com/file/br-11134207-820l6-mvgucvurmayp00.webp",
-    "https://down-br.img.susercontent.com/file/br-11134207-820m3-mvgucvya5lvme7.webp",
+    "/images/led/arvore-espiral-1.webp",
+    "/images/led/arvore-espiral-2.webp",
+    "/images/led/arvore-espiral-3.webp",
+    "/images/led/arvore-espiral-4.webp",
   ],
 };
 
