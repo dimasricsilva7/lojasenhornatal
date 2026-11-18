@@ -309,7 +309,7 @@ export default function LedClient({ main, bumps, upsells }: Props) {
                     {qr ? <img src={qr} alt="QR Code PIX" className="mx-auto h-56 w-56 rounded-lg ring-1 ring-graphite-900/10" /> : <div className="mx-auto flex h-56 w-56 items-center justify-center rounded-lg bg-cream-100 text-sm text-graphite-500">Gerando QR…</div>}
                     {pix.copyPaste ? (
                       <>
-                        <div className="break-all rounded-lg bg-cream-100 px-3 py-2 text-xs text-graphite-700">{pix.copyPaste}</div>
+                        <div data-allow-copy className="select-text break-all rounded-lg bg-cream-100 px-3 py-2 text-xs text-graphite-700">{pix.copyPaste}</div>
                         <button onClick={() => { navigator.clipboard.writeText(pix.copyPaste as string); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="led-btn-primary w-full">
                           {copied ? "Código copiado!" : "Copiar código PIX"}
                         </button>

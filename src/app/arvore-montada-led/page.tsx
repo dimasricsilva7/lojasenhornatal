@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import LedClient, { BuyButton } from "./LedClient";
 import Gallery from "./Gallery";
+import CopyGuard from "./CopyGuard";
 import { MAIN, ORDER_BUMPS, UPSELLS, REVIEWS } from "@/lib/led/config";
 
 // Conteúdo 100% do config (sem banco) → estática + cache de CDN = carregamento instantâneo, sem delay.
@@ -46,6 +47,7 @@ export default function LedPage() {
   const videoReviews = REVIEWS.filter((r) => r.mediaType === "video");
   return (
     <main className="min-h-screen bg-cream-50 pb-28 text-graphite-900">
+      <CopyGuard image="/images/led/bloqueio.webp" />
       <ViewContentTracker productId={MAIN.slug} productName={MAIN.name} priceCents={MAIN.priceCents} />
 
       <div className="mx-auto w-full max-w-xl bg-white">
