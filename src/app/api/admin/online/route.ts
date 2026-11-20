@@ -10,7 +10,7 @@ function pageLabel(raw: string | null, section: string | null) {
   const path = raw?.split("?")[0] ?? null;
   // Na página da árvore, mostra a seção em que o visitante está (hero, vídeo, produtos…).
   if (!path || path === "/") return section?.trim() || "Topo (Hero)";
-  if (path === "/checkout") return "Checkout";
+  if (path === "/checkout") return section === "PIX" ? "PIX (pagamento)" : "Checkout";
   if (path.startsWith("/upsell")) return "Oferta pós-compra";
   if (path.startsWith("/pedido/sucesso")) return "Compra concluída";
   if (path.startsWith("/politicas/")) return "Políticas";
@@ -43,6 +43,7 @@ export async function GET() {
       online: sessions.length,
       todaySessions: today,
       inCheckout: sessions.filter((s) => s.path?.startsWith("/checkout")).length,
+      inPix: sessions.filter((s) => s.path?.startsWith("/checkout") && s.section === "PIX").length,
       pages: count((s) => pageLabel(s.path, s.section)).slice(0, 8),
       sources: count((s) => s.source ?? "Direto"),
       devices: count((s) => DEVICE_LABEL[s.device ?? ""] ?? "Outro"),

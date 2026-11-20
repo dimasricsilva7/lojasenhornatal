@@ -44,8 +44,14 @@ function source(): { source: string; campaign: string | null } {
   return value;
 }
 
-// Seção visível no momento (preenchida pelo IntersectionObserver abaixo).
+// Seção visível no momento (preenchida pelo IntersectionObserver abaixo, ou
+// marcada diretamente por uma página — ex.: o checkout avisa quando o PIX apareceu).
 let currentSection: string | null = null;
+
+/** Marca a etapa atual no batimento (troca de página zera de volta). */
+export function setPingSection(section: string | null) {
+  currentSection = section;
+}
 
 function send(path: string, nav: boolean) {
   const sid = sessionId();

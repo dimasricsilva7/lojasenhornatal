@@ -4,6 +4,7 @@ import { findTransactionByExternalReference, getTransaction, type BravopayTransa
 import { checkPayment } from "@/lib/infinitepay";
 import { getStatus as mpGetStatus } from "@/lib/mercadopago";
 import { getStatus as pbGetStatus } from "@/lib/pagbank";
+import { getStatus as ppGetStatus } from "@/lib/picpay";
 import { sendMetaCapiEvent } from "@/lib/meta-capi";
 import { sendOrderToTranslog, translogEnabled } from "@/lib/translog";
 
@@ -237,6 +238,7 @@ export async function syncOrderFromBravopay(order: Order, minIntervalMs = 4000) 
 export async function syncOrderFromProvider(order: Order, minIntervalMs = 4000) {
   if (order.gateway === "bravopay") return syncOrderFromBravopay(order, minIntervalMs);
   if (order.gateway === "infinitepay") return order; // confirmado no retorno/webhook
+  if (order.gateway === "pixmanual") return order; // sem API: baixa é manual no admin
 
   const terminal: Order["status"][] = ["PAID", "REFUNDED", "CHARGEBACK"];
   if (terminal.includes(order.status)) return order;
@@ -249,6 +251,7 @@ export async function syncOrderFromProvider(order: Order, minIntervalMs = 4000) 
   let status: "PAID" | "PENDING" | "FAILED" = "PENDING";
   if (order.gateway === "mercadopago") status = await mpGetStatus(order.bravopayTransactionId);
   else if (order.gateway === "pagbank") status = await pbGetStatus(order.bravopayTransactionId);
+  else if (order.gateway === "picpay") status = await ppGetStatus(order.bravopayTransactionId);
 
   if (status === "PAID") {
     return (await markOrderPaidGeneric(order.id, { providerTxId: order.bravopayTransactionId, amountCents: order.totalCents, method: "pix" })) ?? order;

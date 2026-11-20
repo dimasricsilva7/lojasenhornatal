@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type Row = { label: string; n: number };
 type Visitor = { id: string; page: string; source: string; campaign: string | null; device: string; pageViews: number; minutes: number };
-type Data = { online: number; todaySessions: number; inCheckout: number; pages: Row[]; sources: Row[]; devices: Row[]; visitors: Visitor[]; at: string };
+type Data = { online: number; todaySessions: number; inCheckout: number; inPix: number; pages: Row[]; sources: Row[]; devices: Row[]; visitors: Visitor[]; at: string };
 
 function Breakdown({ title, rows, total }: { title: string; rows: Row[]; total: number }) {
   return (
@@ -74,6 +74,9 @@ export default function OnlineNow({ detailed = false }: { detailed?: boolean }) 
           <p className="text-3xl font-extrabold tabular-nums text-graphite-950">{data?.online ?? "–"}</p>
           {data && data.inCheckout > 0 && (
             <span className="rounded-md bg-clay-50 px-2 py-0.5 text-xs font-bold text-clay-700">{data.inCheckout} no checkout</span>
+          )}
+          {data && data.inPix > 0 && (
+            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">{data.inPix} no PIX</span>
           )}
         </div>
         <p className="text-xs text-graphite-800/60">

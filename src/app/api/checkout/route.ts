@@ -3,10 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { priceCheckout } from "@/lib/pricing";
-import { createPixTransaction, BravopayError } from "@/lib/bravopay";
-import { createCheckoutLink, InfinitePayError } from "@/lib/infinitepay";
-import { createPixCharge as mpCreatePix, MercadoPagoError } from "@/lib/mercadopago";
-import { createPixCharge as pbCreatePix, PagBankError } from "@/lib/pagbank";
+import { generateOrderPayment, resolveGateway, GatewayError } from "@/lib/checkout-gateway";
 import { getSettings } from "@/lib/settings";
 import { generateDisplayId } from "@/lib/ids";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -159,97 +156,18 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const rawGateway = (await getSettings()).payment_gateway;
-  const gateway = ["infinitepay", "mercadopago", "pagbank"].includes(rawGateway) ? rawGateway : "bravopay";
+  const settings = await getSettings();
+  const gateway = resolveGateway(settings.payment_gateway);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
-  if (gateway === "infinitepay") {
-    try {
-      const url = await createCheckoutLink({
-        amountCents: order.totalCents,
-        // id do pedido na descrição → link único por pedido (a InfinitePay deduplica itens idênticos).
-        description: `${quote.items[0]?.name ?? "Árvore de Natal Montada"} · Pedido ${order.displayId}`,
-        orderNsu: order.displayId,
-        redirectUrl: `${siteUrl}/pedido/sucesso/${order.displayId}`,
-        webhookUrl: `${siteUrl}/api/webhooks/infinitepay`,
-        customer: { name: customer.name, email: customer.email, phone: customer.phone },
-      });
-
-      order = await db.order.update({
-        where: { id: order.id },
-        data: { status: "PENDING", gateway: "infinitepay", checkoutUrl: url },
-      });
-
-      await db.trackingEvent.create({ data: { orderId: order.id, eventName: "checkout_link_created" } });
-    } catch (err) {
-      await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
-      await db.trackingEvent.create({
-        data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: "infinitepay_error" } },
-      });
-      const message = err instanceof InfinitePayError ? err.message : "Falha ao gerar o checkout";
-      return NextResponse.json({ error: message }, { status: 502 });
-    }
-
-    return NextResponse.json(toResponse(order));
-  }
-
-  // Mercado Pago / PagBank: PIX gerado via API e exibido NO nosso checkout (mesmo
-  // fluxo do BravoPay — copia-e-cola + QR + polling). Confirmação por GET autoritativo.
-  if (gateway === "mercadopago" || gateway === "pagbank") {
-    try {
-      const desc = quote.items[0]?.name ?? "Árvore de Natal Montada";
-      const pix =
-        gateway === "mercadopago"
-          ? await mpCreatePix({
-              amountCents: order.totalCents,
-              description: desc,
-              orderNsu: order.displayId,
-              payer: { email: customer.email, firstName: customer.name.split(" ")[0], cpf: customer.cpf },
-            })
-          : await pbCreatePix({
-              amountCents: order.totalCents,
-              description: desc,
-              orderNsu: order.displayId,
-              customer: { name: customer.name, email: customer.email, cpf: customer.cpf, phone: customer.phone },
-              webhookUrl: `${siteUrl}/api/webhooks/pagbank`,
-            });
-
-      order = await db.order.update({
-        where: { id: order.id },
-        data: {
-          status: "PIX_GENERATED",
-          gateway,
-          bravopayTransactionId: pix.providerTxId,
-          pixCopyPaste: pix.copyPaste,
-          pixExpiresAt: pix.expiresAt,
-        },
-      });
-      await db.trackingEvent.create({ data: { orderId: order.id, eventName: "pix_generated" } });
-    } catch (err) {
-      await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
-      await db.trackingEvent.create({
-        data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: `${gateway}_error` } },
-      });
-      const message = err instanceof MercadoPagoError || err instanceof PagBankError ? err.message : "Falha ao gerar o PIX";
-      return NextResponse.json({ error: message }, { status: 502 });
-    }
-
-    return NextResponse.json(toResponse(order));
-  }
-
+  // Meio de cobrança compartilhado (ver lib/checkout-gateway): o gateway escolhido
+  // no admin vale para todos os produtos.
   try {
-    const tx = await createPixTransaction({
-      amountCents: order.totalCents,
-      idempotencyKey: order.idempotencyKey,
-      externalReference: order.displayId,
+    order = await generateOrderPayment({ ...order, customer }, gateway, {
+      settings,
+      siteUrl,
       description: quote.items[0]?.name ?? "Árvore de Natal Montada",
       productId,
-      customer: {
-        name: customer.name,
-        email: customer.email,
-        cpf: customer.cpf,
-        phone: customer.phone,
-      },
       metadata: { orderId: order.id, displayId: order.displayId },
       utm: {
         source: input.utm?.utmSource,
@@ -262,28 +180,16 @@ export async function POST(req: NextRequest) {
         ttclid: input.utm?.ttclid,
       },
     });
-
-    order = await db.order.update({
-      where: { id: order.id },
-      data: {
-        status: "PIX_GENERATED",
-        bravopayTransactionId: tx.id,
-        pixCopyPaste: tx.pix?.copy_paste,
-        pixExpiresAt: tx.pix?.expires_at ? new Date(tx.pix.expires_at) : null,
-      },
-    });
-
     await db.trackingEvent.create({
-      data: { orderId: order.id, eventName: "pix_generated" },
+      data: { orderId: order.id, eventName: gateway === "infinitepay" ? "checkout_link_created" : "pix_generated" },
     });
-
   } catch (err) {
     await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } });
     await db.trackingEvent.create({
-      data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: "bravopay_error" } },
+      data: { orderId: order.id, eventName: "purchase_failed", metadata: { reason: `${gateway}_error` } },
     });
-    const message = err instanceof BravopayError ? err.message : "Falha ao gerar o PIX";
-    return NextResponse.json({ error: message }, { status: 502 });
+    const message = err instanceof GatewayError ? err.message : "Falha ao gerar o PIX";
+    return NextResponse.json({ error: message }, { status: err instanceof GatewayError ? err.status : 502 });
   }
 
   return NextResponse.json(toResponse(order));

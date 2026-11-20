@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { createPixTransaction, getTransaction, BravopayError } from "@/lib/bravopay";
+import { generateOrderPayment, resolveGateway, GatewayError } from "@/lib/checkout-gateway";
+import { getSettings } from "@/lib/settings";
 import { generateDisplayId } from "@/lib/ids";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import { CAMPAIGN, MAIN, ALL_ADDONS, findAddon } from "@/lib/led/config";
+import { CAMPAIGN, MAIN, findAddon } from "@/lib/led/config";
 
 export const dynamic = "force-dynamic";
 
@@ -106,32 +107,25 @@ export async function POST(req: NextRequest) {
   });
 
   const productId = mainProduct.bravopayProductId || process.env.BRAVOPAY_PRODUCT_ID || undefined;
+  // Meio de cobrança COMPARTILHADO com a loja principal (lib/checkout-gateway):
+  // o gateway escolhido no admin (inclui PIX manual) vale aqui também.
+  const settings = await getSettings();
+  const gateway = resolveGateway(settings.payment_gateway);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   try {
-    const tx = await createPixTransaction({
-      amountCents: totalCents,
-      idempotencyKey: input.idempotencyKey,
-      externalReference: order.displayId,
-      description: `${MAIN.name} · Pedido ${order.displayId}`,
+    order = await generateOrderPayment({ ...order, customer }, gateway, {
+      settings,
+      siteUrl,
+      description: MAIN.name,
       productId,
-      customer: { name: customer.name, email: customer.email, cpf: customer.cpf, phone: customer.phone },
+      metadata: { orderId: order.id, campaign: CAMPAIGN },
       utm: { source: input.utm?.utmSource, medium: input.utm?.utmMedium, campaign: input.utm?.utmCampaign, content: input.utm?.utmContent, term: input.utm?.utmTerm, fbclid: input.utm?.fbclid, gclid: input.utm?.gclid, ttclid: input.utm?.ttclid },
     });
-    // BravoPay gera o copy_paste em ~5-30s; tenta uma leitura imediata, senão o polling do cliente pega.
-    let pix = tx.pix?.copy_paste ?? null;
-    let pixExp = tx.pix?.expires_at ? new Date(tx.pix.expires_at) : null;
-    if (!pix && tx.id) {
-      const again = await getTransaction(tx.id).catch(() => null);
-      if (again?.pix?.copy_paste) { pix = again.pix.copy_paste; pixExp = again.pix.expires_at ? new Date(again.pix.expires_at) : null; }
-    }
-    order = await db.order.update({
-      where: { id: order.id },
-      data: { status: "PIX_GENERATED", bravopayTransactionId: tx.id, pixCopyPaste: pix, pixExpiresAt: pixExp },
-    });
-    await db.trackingEvent.create({ data: { orderId: order.id, eventName: "pix_generated", metadata: { campaign: CAMPAIGN } } });
+    await db.trackingEvent.create({ data: { orderId: order.id, eventName: gateway === "infinitepay" ? "checkout_link_created" : "pix_generated", metadata: { campaign: CAMPAIGN } } });
   } catch (err) {
     await db.order.update({ where: { id: order.id }, data: { status: "FAILED" } }).catch(() => {});
-    const message = err instanceof BravopayError ? err.message : "Falha ao gerar o PIX";
-    return NextResponse.json({ error: message }, { status: 502 });
+    const message = err instanceof GatewayError ? err.message : "Falha ao gerar o PIX";
+    return NextResponse.json({ error: message }, { status: err instanceof GatewayError ? err.status : 502 });
   }
 
   return NextResponse.json(resp(order));

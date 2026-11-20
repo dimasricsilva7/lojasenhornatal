@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { formatBRL } from "@/lib/pricing";
-import { RefreshCw, X, Trash2 } from "lucide-react";
+import { RefreshCw, X, Trash2, CheckCircle2, MessageCircle, Truck } from "lucide-react";
+
+const KIND_LABEL: Record<string, string> = { order_bump: "adicional", upsell: "upsell" };
+const waLink = (phone: string) => `https://wa.me/55${phone.replace(/\D/g, "")}`;
 
 const STATUS_OPTIONS = ["", "CREATED", "PIX_GENERATED", "PENDING", "PAID", "EXPIRED", "CANCELLED", "REFUNDED", "CHARGEBACK", "FAILED"];
 
@@ -27,8 +30,10 @@ type Order = {
   utmSource: string | null;
   utmCampaign: string | null;
   bravopayTransactionId: string | null;
+  trackingCode: string | null;
+  isUpsellOrder: boolean;
   customer: { name: string; email: string; phone: string; cpf: string };
-  items: { name: string }[];
+  items: { name: string; kind: string }[];
 };
 
 export default function OrdersClient() {
@@ -62,6 +67,21 @@ export default function OrdersClient() {
     setBusyId(id);
     try {
       await fetch(`/api/admin/orders/${id}/reverify`, { method: "POST" });
+      load();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function markPaid(id: string) {
+    if (!confirm("Confirmar que este pedido foi pago? (use para PIX manual depois de ver o pagamento na sua conta)")) return;
+    setBusyId(id);
+    try {
+      await fetch(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_paid" }),
+      });
       load();
     } finally {
       setBusyId(null);
@@ -131,13 +151,30 @@ export default function OrdersClient() {
           <tbody className="divide-y divide-graphite-900/5">
             {orders.map((order) => (
               <tr key={order.id}>
-                <td className="px-4 py-3 font-medium">{order.displayId}</td>
+                <td className="px-4 py-3 font-medium">
+                  {order.displayId}
+                  {order.isUpsellOrder && <span className="ml-1 rounded bg-clay-50 px-1.5 py-0.5 text-[10px] font-bold text-clay-700">upsell</span>}
+                  {order.trackingCode && (
+                    <span className="mt-1 flex items-center gap-1 text-[11px] font-normal text-sage-700">
+                      <Truck className="h-3 w-3" /> {order.trackingCode}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-graphite-800/70">{new Date(order.createdAt).toLocaleString("pt-BR")}</td>
                 <td className="px-4 py-3">
                   <p>{order.customer.name}</p>
                   <p className="text-xs text-graphite-800/50">{order.customer.email} · {order.customer.phone}</p>
                 </td>
-                <td className="px-4 py-3 text-graphite-800/70">{order.items.map((i) => i.name).join(", ")}</td>
+                <td className="px-4 py-3 text-graphite-800/70">
+                  <ul className="space-y-0.5">
+                    {order.items.map((i, idx) => (
+                      <li key={idx}>
+                        {i.name}
+                        {KIND_LABEL[i.kind] && <span className="ml-1 text-xs text-graphite-800/45">({KIND_LABEL[i.kind]})</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </td>
                 <td className="px-4 py-3 font-medium">{formatBRL(order.totalCents)}</td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[order.status] ?? ""}`}>
@@ -147,6 +184,19 @@ export default function OrdersClient() {
                 <td className="px-4 py-3 text-xs text-graphite-800/60">{order.utmSource ?? "direto"}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
+                    <a
+                      title="Chamar no WhatsApp"
+                      href={waLink(order.customer.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="h-4 w-4 text-emerald-600" />
+                    </a>
+                    {order.status !== "PAID" && (
+                      <button title="Confirmar pagamento (baixa manual)" disabled={busyId === order.id} onClick={() => markPaid(order.id)}>
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      </button>
+                    )}
                     <button title="Reverificar pagamento" disabled={busyId === order.id} onClick={() => reverify(order.id)}>
                       <RefreshCw className={`h-4 w-4 text-graphite-800/60 ${busyId === order.id ? "animate-spin" : ""}`} />
                     </button>

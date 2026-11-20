@@ -2,8 +2,13 @@ import { db } from "@/lib/db";
 
 export const DEFAULT_SETTINGS = {
   store_name: "Senhor Natal",
-  // Gateway que cobra os pedidos: "bravopay" (PIX na própria página) ou "infinitepay" (cartão+PIX hospedado).
+  // Gateway que cobra os pedidos: bravopay | mercadopago | pagbank | picpay (PIX na própria página),
+  // infinitepay (cartão+PIX hospedado) ou pixmanual (PIX copia-e-cola gerado da sua chave, baixa manual no admin).
   payment_gateway: "bravopay",
+  // PIX manual (usado quando payment_gateway = "pixmanual"): sua chave PIX e dados do recebedor para o copia-e-cola.
+  pix_manual_key: "",
+  pix_manual_name: "",
+  pix_manual_city: "",
   main_price_cents: "9700",
   compare_at_cents: "",
   shipping_days: "3 a 5",

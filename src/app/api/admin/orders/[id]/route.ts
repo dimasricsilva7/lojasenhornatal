@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-guard";
 import { db } from "@/lib/db";
+import { markOrderPaidGeneric } from "@/lib/order-status";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { admin, response } = await requireAdmin();
@@ -15,7 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json(order);
 }
 
-const patchSchema = z.object({ action: z.literal("cancel") });
+const patchSchema = z.object({ action: z.enum(["cancel", "mark_paid"]) });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { admin, response } = await requireAdmin();
@@ -27,6 +28,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const order = await db.order.findUnique({ where: { id: params.id } });
   if (!order) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  // Baixa manual (PIX manual, ou qualquer pedido que o lojista confirmou por fora).
+  // Dispara os mesmos efeitos de um pagamento normal: Meta, Translog, upsell liberado.
+  if (parsed.data.action === "mark_paid") {
+    if (order.status === "PAID") return NextResponse.json(order);
+    const paid = await markOrderPaidGeneric(order.id, {
+      providerTxId: `manual_${order.displayId}`,
+      amountCents: order.totalCents,
+      method: "pix_manual",
+    });
+    return NextResponse.json(paid ?? order);
+  }
+
   if (order.status === "PAID") {
     return NextResponse.json({ error: "Não é possível cancelar um pedido já pago" }, { status: 400 });
   }

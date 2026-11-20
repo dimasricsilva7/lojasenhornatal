@@ -171,12 +171,53 @@ export default function SettingsClient() {
             <option value="bravopay">BravoPay — PIX na própria página</option>
             <option value="mercadopago">Mercado Pago — PIX na própria página</option>
             <option value="pagbank">PagBank — PIX na própria página</option>
+            <option value="picpay">PicPay Empresas — PIX na própria página</option>
             <option value="infinitepay">InfinitePay — cartão + PIX (página hospedada)</option>
+            <option value="pixmanual">PIX manual (sua chave) — baixa manual no admin</option>
           </select>
           <span className="mt-1 block text-xs text-graphite-800/50">
-            Mercado Pago e PagBank exigem a credencial configurada na Vercel (token do provedor). Sem credencial, o pedido falha ao gerar o PIX.
+            Mercado Pago, PagBank e PicPay exigem a credencial configurada na Vercel (token/chaves do provedor). Sem credencial, o pedido falha ao gerar o PIX.
           </span>
         </label>
+
+        {settings.payment_gateway === "pixmanual" && (
+          <div className="space-y-3 rounded-lg border border-graphite-900/10 bg-cream-50/60 p-4">
+            <p className="text-xs text-graphite-800/60">
+              O PIX copia-e-cola é gerado a partir da sua chave e o dinheiro cai direto na sua conta. <strong>A confirmação é manual</strong>: quando o cliente pagar, veja na sua conta e clique em <strong>&quot;Confirmar pagamento&quot;</strong> no pedido (em Pedidos). O upsell e o rastreio só disparam após essa confirmação.
+            </p>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-graphite-800/70">Chave PIX</span>
+              <input
+                value={settings.pix_manual_key ?? ""}
+                onChange={(e) => setSettings((s) => ({ ...s, pix_manual_key: e.target.value }))}
+                placeholder="CPF, CNPJ, celular, e-mail ou chave aleatória"
+                className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
+              />
+            </label>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-graphite-800/70">Nome do recebedor (até 25)</span>
+                <input
+                  value={settings.pix_manual_name ?? ""}
+                  onChange={(e) => setSettings((s) => ({ ...s, pix_manual_name: e.target.value }))}
+                  maxLength={25}
+                  placeholder="Como aparece na conta PIX"
+                  className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-graphite-800/70">Cidade (até 15)</span>
+                <input
+                  value={settings.pix_manual_city ?? ""}
+                  onChange={(e) => setSettings((s) => ({ ...s, pix_manual_city: e.target.value }))}
+                  maxLength={15}
+                  placeholder="Ex: Curitiba"
+                  className="w-full rounded-lg border border-graphite-900/15 px-3.5 py-2.5 text-sm"
+                />
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       {GROUPS.map((group) => (

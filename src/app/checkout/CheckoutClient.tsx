@@ -9,6 +9,7 @@ import { Check, Copy, Loader2, ShieldCheck, Lock, User, MapPin, ShoppingBag, Gif
 import { formatBRL } from "@/lib/pricing";
 import { trackPixel } from "@/components/MetaPixel";
 import { readAttribution } from "@/components/TrackingCapture";
+import { setPingSection } from "@/components/Pinger";
 
 // Máscaras (o servidor já remove não-dígitos; aqui é só UX).
 const maskCPF = (v: string) =>
@@ -187,6 +188,12 @@ export default function CheckoutClient({
       setSubmitting(false);
     }
   }
+
+  // Marca "PIX" no monitor "Online agora" do admin enquanto a tela do PIX está aberta.
+  useEffect(() => {
+    if (pix) setPingSection("PIX");
+    return () => setPingSection(null);
+  }, [pix]);
 
   useEffect(() => {
     if (pix?.pixCopyPaste) {
